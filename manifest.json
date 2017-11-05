@@ -1,0 +1,28 @@
+{
+  "manifest_version": 2,
+
+  "name": "Bweb-tool",
+  "description": "Denne utvidelsen legger til ekstra funksjonalitet på NTE Marked's Bestillingsweb.",
+  "version": "0.1",
+  "icons": {
+    "16": "icon16.png",
+    "24": "icon24.png",
+    "32": "icon32.png",
+    "48": "icon48.png",
+    "64": "icon64.png",
+    "128": "icon128.png"
+  },
+  "permissions": [
+    "activeTab"
+  ],
+  "browser_action": {
+    "default_title": "Ekstra funksjonalitet på Bestillingsweb."
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://bweb2.nteb.no/","https://bweb2.nteb.no/akseptert","https://bweb2.nteb.no/ferdig","https://bweb2.nteb.no/mottatt"],
+      "js": ["DataTables/datatables.min.js", "bweb-tool.js"],
+      "css": ["DataTables/datatables.min.css"]
+    }
+  ]
+}
