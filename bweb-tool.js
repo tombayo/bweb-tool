@@ -2,9 +2,14 @@
  * Main Script of the extension
  */
 
-
-
 $(function(){
+  var num_orders = $('#id_antall').val();
+  if (num_orders != 'Alle') { // Check if number of orders is set to ALL
+    $('#id_antall option[value=Alle]').prop('selected', true); // Selects option ALL
+    $('#content form').submit(); // Submits form to load full length table
+    return undefined; // Breaks the function here, as the code below is not needed until after reload.
+  }
+
   // Duplicate table to remove tablesorter, and add tfoot for filtering
   var newtable = $('<table id="bweb" width="100%" class="compact row-border">')
     .html($('#oversikt').html());
@@ -23,6 +28,7 @@ $(function(){
   //$('#bweb .header').css({paddingLeft:'4px',cursor:'default'});
 
   $('#bweb').DataTable( {
+    stateSave: true,
     "order": [[ 0, "desc" ]], // Selects the initial ordering of the table
     "paging": false, // Defines if paging should be enabled
     "columnDefs": [ // Column number 6 is set to be invisible
@@ -44,7 +50,12 @@ $(function(){
           });
 
         column.data().unique().sort().each( function ( d, j ) {
-          select.append( '<option value="'+d+'">'+d+'</option>' )
+          var searchval = column.search().replace(/[^\w\s/|]/gi, '');
+          if(searchval.indexOf(d) !== -1){
+            select.append( '<option value="'+d+'" selected="selected">'+d+'</option>' )
+          } else {
+            select.append( '<option value="'+d+'">'+d+'</option>' )
+          }
         });
         $('.chosen-select').chosen({width: "-webkit-fill-available"});
       });
