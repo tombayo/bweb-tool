@@ -21,8 +21,8 @@
   "content_scripts": [
     {
       "matches": ["https://bweb2.nteb.no/","https://bweb2.nteb.no/akseptert","https://bweb2.nteb.no/ferdig","https://bweb2.nteb.no/mottatt"],
-      "js": ["DataTables/datatables.min.js", "bweb-tool.js"],
-      "css": ["DataTables/datatables.min.css"]
+      "js": ["DataTables/datatables.min.js", "bweb-tool.js", "chosen.jquery.min.js"],
+      "css": ["DataTables/datatables.min.css", "bweb-tools.css", "chosen.min.css"]
     }
   ]
 }
