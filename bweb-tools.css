@@ -21,6 +21,7 @@ table#bweb thead .sorting_desc {
 
 #bweb th {
   border-bottom: 1px solid rgb(17, 17, 17);
+  vertical-align: bottom;
 }
 
 #bweb select {

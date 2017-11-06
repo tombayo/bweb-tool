@@ -38,8 +38,6 @@ $(function(){
           .appendTo( $(column.footer()).empty() )
           .on( 'change', function () {
             var val = $(this).val().join('|');
-            console.log($(this).val())
-            console.log(val);
             column
               .search( val ? '^'+val+'$' : '', true, false )
               .draw();
