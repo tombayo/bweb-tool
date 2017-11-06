@@ -1,3 +1,7 @@
+table#bweb {
+  text-transform: capitalize;
+}
+
 table#bweb thead .sorting {
   background-image: url(https://cdn.datatables.net/1.10.16/images/sort_both.png);
 }
@@ -18,7 +22,9 @@ table#bweb thead .sorting_desc {
   overflow: hidden;
   border-top: 1px solid rgb(221, 221, 221);
 }
-
+#bweb td:nth-child(7), #bweb > tfoot th:nth-child(7) {
+  text-transform: uppercase; 
+}
 #bweb th {
   border-bottom: 1px solid rgb(17, 17, 17);
   vertical-align: bottom;
@@ -26,6 +32,7 @@ table#bweb thead .sorting_desc {
 
 #bweb select {
   width: -webkit-fill-available;
+  width: -moz-fill-available;
 }
 
 #bweb_filter {

@@ -5,12 +5,12 @@
   "description": "Denne utvidelsen legger til ekstra funksjonalitet på NTE Marked's Bestillingsweb.",
   "version": "0.1",
   "icons": {
-    "16": "icon16.png",
-    "24": "icon24.png",
-    "32": "icon32.png",
-    "48": "icon48.png",
-    "64": "icon64.png",
-    "128": "icon128.png"
+    "16": "icons/icon16.png",
+    "24": "icons/icon24.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "64": "icons/icon64.png",
+    "128": "icons/icon128.png"
   },
   "permissions": [
     "activeTab"
@@ -21,8 +21,8 @@
   "content_scripts": [
     {
       "matches": ["https://bweb2.nteb.no/","https://bweb2.nteb.no/akseptert/","https://bweb2.nteb.no/ferdig/","https://bweb2.nteb.no/mottatt/","https://bweb2.nteb.no/arkivert/"],
-      "js": ["DataTables/datatables.min.js", "bweb-tool.js", "chosen.jquery.min.js"],
-      "css": ["DataTables/datatables.min.css", "bweb-tools.css", "chosen.min.css"]
+      "js": ["DataTables/datatables.min.js", "bweb-tool.js", "Chosen/chosen.jquery.min.js"],
+      "css": ["DataTables/datatables.min.css", "bweb-tools.css", "Chosen/chosen.min.css"]
     }
   ]
 }
