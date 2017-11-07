@@ -11,6 +11,12 @@ table#bweb thead .sorting_asc {
 table#bweb thead .sorting_desc {
   background-image: url(https://cdn.datatables.net/1.10.16/images/sort_desc.png);
 }
+table#bweb thead .sorting_asc_disabled {
+  background-image: url(https://cdn.datatables.net/1.10.16/images/sort_asc_disabled.png);
+}
+table#bweb thead .sorting_desc_disabled {
+  background-image: url(https://cdn.datatables.net/1.10.16/images/sort_desc_disabled.png);
+}
 #bweb td, #bweb th {
   border: none;
   max-width: 150px;

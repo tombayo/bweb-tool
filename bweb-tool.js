@@ -67,6 +67,8 @@ $(function(){
   // Style and DOM mods
   uiBooster();
 
+
+  $.fn.dataTable.moment('DD.MM.YYYY HH:mm'); // Prepare Moment.js for sorting datetime
   $('#bweb').DataTable( {
     "stateSave": true,
     "language": {"url":"//cdn.datatables.net/plug-ins/1.10.16/i18n/Norwegian-Bokmal.json"},
