@@ -36,9 +36,10 @@ table#bweb thead .sorting_desc_disabled {
   vertical-align: bottom;
 }
 
-#bweb select {
+#bweb select,
+#bweb .chosen-container {
   width: -webkit-fill-available;
-  width: -moz-fill-available;
+  width: -moz-available;
 }
 
 #bweb_filter {
