@@ -1,6 +1,5 @@
 {
   "manifest_version": 2,
-
   "name": "Bweb-tool",
   "description": "Denne utvidelsen legger til ekstra funksjonalitet på NTE Marked's Bestillingsweb.",
   "version": "0.9",
@@ -20,9 +19,25 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://bweb2.nteb.no/","https://bweb2.nteb.no/akseptert/","https://bweb2.nteb.no/ferdig/","https://bweb2.nteb.no/mottatt/","https://bweb2.nteb.no/arkivert/"],
-      "js": ["DataTables/datatables.min.js", "bweb-tool.js", "Chosen/chosen.jquery.min.js", "Moment/moment.js", "DataTables/plugins/datetime-moment.js"],
-      "css": ["DataTables/datatables.min.css", "bweb-tools.css", "Chosen/chosen.min.css"]
+      "matches": [
+        "https://bweb2.nteb.no/",
+        "https://bweb2.nteb.no/akseptert/",
+        "https://bweb2.nteb.no/ferdig/",
+        "https://bweb2.nteb.no/mottatt/",
+        "https://bweb2.nteb.no/arkivert/"
+      ],
+      "js": [
+          "DataTables/datatables.min.js",
+          "bweb-tool.js",
+          "Chosen/chosen.jquery.min.js",
+          "Moment/moment.js",
+          "DataTables/plugins/datetime-moment.js"
+      ],
+      "css": [
+          "DataTables/datatables.min.css",
+          "bweb-tools.css",
+          "Chosen/chosen.min.css"
+      ]
     }
   ]
 }
