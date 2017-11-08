@@ -1,5 +1,5 @@
 # bweb-tool
-En Chrome-utvidelse som gjør det enklere å bruke NTE Marked's Bestillingsweb.
+En Nettleser-utvidelse som gjør det enklere å bruke NTE Marked's Bestillingsweb.
 
 ## Funksjoner
 * Alle ordrer lastes automatisk inn.
@@ -9,7 +9,8 @@ En Chrome-utvidelse som gjør det enklere å bruke NTE Marked's Bestillingsweb.
 * Mye mer kommer...
 
 ## Installasjon
-* Utvidelsen kan enkelt installeres fra Chrome Web Store: [https://chrome.google.com/webstore/detail/bweb-tool/knfdabmdmamjglkopginfhahnhecbnhl](Bweb-tool).
+* Utvidelsen kan enkelt installeres fra Chrome Web Store: [https://chrome.google.com/webstore/detail/bweb-tool/knfdabmdmamjglkopginfhahnhecbnhl](Bweb-tool for Chrome).
+* Utvidelsen kan også brukes i Firefox: [https://addons.mozilla.org/en-US/firefox/addon/bweb-tool/] (Bweb-tool for Firefox).
 
 ## Utvikling
 * Gjeldende versjon er 1.0.
