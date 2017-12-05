@@ -93,7 +93,7 @@ $(function(){
           });
 
         column.data().unique().sort().each( function ( d, j ) {
-          var searchval = column.search().replace(/[^\w\s/|]/gi, '');
+          var searchval = column.search().replace(/[^\w\s/|ÆØÅæøå]/gi, '');
           if(searchval.indexOf(d) !== -1){
             select.append( '<option value="'+d+'" selected="selected">'+d+'</option>' )
           } else {
