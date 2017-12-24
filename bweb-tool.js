@@ -42,6 +42,21 @@ function filterStatus(status) {
   $('.chosen-select:last').val([status]).trigger('change').trigger('chosen:updated'); // Run the filter-change.
 }
 
+function asyncRefresh() {
+  $.post('https://bweb2.nteb.no/',{
+    csrfmiddlewaretoken: $('[name="csrfmiddlewaretoken"]').val(),
+    kategori: '',
+    antall: 'Alle',
+  },
+  function(data,status){
+    var html = $.parseHTML(data);
+    var div = $('<div>').html(html);
+    var tbl = $('#bweb').DataTable();
+    tbl.clear();
+    
+  });
+}
+
 $(function(){
   var num_orders = $('#id_antall').val();
   if (num_orders != 'Alle') { // Check if number of orders is set to ALL
