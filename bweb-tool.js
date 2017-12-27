@@ -55,6 +55,38 @@ function asyncRefresh() {
     tbl.clear();
     
   });
+
+  /**
+   * Notes Below
+   */
+  var a = ''
+  $.post('https://bweb2.nteb.no/',{
+    csrfmiddlewaretoken: $('[name="csrfmiddlewaretoken"]').val(),
+    kategori: '',
+    antall: 'Alle',
+  },
+  function(data,status){
+    a = $.parseHTML(data);
+    var b = $('<div>').html(a[12])
+    var c = b.find('#oversikt tbody').children()
+    var t = $('#bweb').DataTable();
+    for (r of c) {
+      t.row.add(r);
+    }
+    t.draw();
+  });
+
+  var div = $('<div>').load('https://bweb2.nteb.no/ #oversikt tbody', {
+    csrfmiddlewaretoken: $('[name="csrfmiddlewaretoken"]').val(),
+    kategori: '',
+    antall: 'Alle',
+  }, function(){
+    console.log(div);
+  });
+
+  /**
+   * End of Notes
+   */
 }
 
 $(function(){
