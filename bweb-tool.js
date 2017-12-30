@@ -35,7 +35,7 @@ function uiBooster() {
           window.alert('Denne funksjonen kommer snart...');
         }),
       $('<span>').addClass('nav-item'),
-      $('<button id="refresh-btn" type="button">Oppdater</button>').addClass('nav-item').height($('#filter-unread').height()).on('click',function(){
+      $('<button id="refresh-btn" type="button">Oppdater</button>').addClass('nav-item').on('click',function(){
         if (!$(this).prop('disabled')) { // check if button is disabled, to prevent double loading
           backgroundRefresh();
         }
@@ -64,7 +64,7 @@ function uiBooster() {
  */
 function btnLoad(id,text) {
   var btn = $(id);
-  btn.prop('disabled', true).html(text+'<span>.</span><span>.</span><span>.</span>').addClass('loading');
+  btn.prop('disabled', true).html(text+'<span>.</span><span>.</span><span>.</span>').addClass('loading').height($('li > a').first().height());
 }
 
 /**
@@ -75,7 +75,7 @@ function btnLoad(id,text) {
  */
 function btnReady(id,text) {
   var btn = $(id);
-  btn.prop('disabled', false).html(text).removeClass('loading');
+  btn.prop('disabled', false).html(text).removeClass('loading').height($('li > a').first().height());
 }
 
 /**
