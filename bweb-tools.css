@@ -49,3 +49,82 @@ table#bweb thead .sorting_desc_disabled {
 table#bweb .search-choice-close {
   background: url(https://harvesthq.github.io/chosen/chosen-sprite.png) -42px 1px no-repeat;
 }
+
+@keyframes opacity {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+.loading span {
+  animation-name: opacity;
+  animation-duration: 1s;
+  animation-iteration-count: infinite;
+}
+.loading span:nth-child(1) { animation-delay: 100ms; }
+.loading span:nth-child(2) { animation-delay: 300ms; }
+.loading span:nth-child(3) { animation-delay: 500ms; }
+
+.loading-slow span {
+  opacity: 0;
+  animation-name: opacity;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+}
+.loading-slow span:nth-child(1) { animation-delay: 100ms; }
+.loading-slow span:nth-child(2) { animation-delay: 300ms; }
+.loading-slow span:nth-child(3) { animation-delay: 500ms; }
+.loading-slow span:nth-child(4) { animation-delay: 700ms; }
+.loading-slow span:nth-child(5) { animation-delay: 900ms; }
+.loading-slow span:nth-child(6) { animation-delay: 1100ms;}
+.loading-slow span:nth-child(7) { animation-delay: 1300ms;}
+.loading-slow span:nth-child(8) { animation-delay: 1500ms;}
+.loading-slow span:nth-child(9) { animation-delay: 1700ms;}
+.loading-slow span:nth-child(10){ animation-delay: 1900ms;}
+
+.nav-item {
+  font-size: 14px;
+  display: block;
+  float: left;
+  padding: 5px 10px;
+  color: #0099ff;
+  text-decoration: none;
+  background: #f6f6f6;
+  font-weight: bold;
+  line-height: normal;
+}
+input.nav-item {
+  background-image: linear-gradient(rgb(238, 238, 238) 1%, rgb(255, 255, 255) 15%);
+  border-top: 0;
+  border-bottom: 0;
+  font-weight:normal;
+  color: initial;
+}
+button.nav-item {
+  border: none;
+  background: #f6f6f6;
+  font-weight: bold;
+}
+button.nav-item:hover {
+  background: #0099ff; 
+  color: #fff;
+  cursor: pointer;
+}
+form.nav-item {
+  display: initial;
+  margin: initial;
+  padding: 0px;
+}
+span.nav-item {
+  font-weight: normal;
+  font-style:italic;
+}
+
+.good-txt {
+  color: #47a447;
+}
+.bad-txt {
+  color: #992d2d;
+}
+
+div#content {
+  padding:0px;
+}
