@@ -98,12 +98,24 @@ function datatableLoaded() {
 }
 
 /**
+ * Runs when data in the datatables has been updated, either from a refresh or a pageload.
+ * 
+ * @param {DataTable} datatable datatable api
+ */
+function dataUpdated(datatable) {
+  var dt = datatable;
+  filterRefresh(dt); // Refresh the table's filters.
+  $('#'+ dt.context[0].sTableId +' tbody > tr').each(function() {
+    $(this).attr('title', $(this).html().match(/<!--[\s\S]*?-->/g)[0].replace(/<!--|-->|<td>|<\/td>/g, '').replace(/\n/g,' '));
+  });
+}
+
+/**
  * Applies a filter to the status column
  * 
  * @param {String} status 
  */
 function filterStatus(status) {
-  console.log(status);
   $('.chosen-select:last').val([status]).trigger('change').trigger('chosen:updated'); // Run the filter-change.
 }
 
@@ -156,7 +168,7 @@ function backgroundRefresh() {
         tbl.row.add(row);
       }
       tbl.draw();
-      filterRefresh(tbl);
+      dataUpdated(tbl); // Data is now updated, lets run this to trigger any additional work on the data.
       $('#refresh-feedback').html(new Date().toLocaleString() + ' - Oppdatert!').addClass('good-txt');
     }
     btnReady('#refresh-btn', 'Oppdater &#8635;');
@@ -210,7 +222,7 @@ $(function(){
    * Ideally we'd just kill the tablesorter addon, but website runs an older version of 
    * tablesorter which does not support any such functionality. 
    */
-  var newtable = $('<table id="bweb" width="100%" class="compact row-border">')
+  var newtable = $('<table id="bweb" width="100%" class="compact row-border hover">')
     .html($('#oversikt').html().toLowerCase());
   var footer = $('<tfoot/>')
     .html($(newtable).find('thead').html())
@@ -260,6 +272,7 @@ $(function(){
         });
       });
       datatableLoaded(); // Everything is now loaded, lets run this to add more functionality.
+      dataUpdated(this.api()); // We have also added data in the table.
     }
   });
 });
