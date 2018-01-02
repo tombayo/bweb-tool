@@ -40,7 +40,7 @@ function uiBooster() {
           backgroundRefresh();
         }
       }),
-      $('<span id="refresh-feedback">').addClass('nav-item')
+      $('<span id="refresh-feedback">').addClass('nav-item').css({overflow:'hidden'})
     )
   );
 
@@ -150,7 +150,7 @@ function tableLoading(tableid) {
  */
 function backgroundRefresh() {
   btnLoad('#refresh-btn', 'Oppdaterer');
-  $('#refresh-feedback').html(''); // clears the feedback-area
+  $('#refresh-feedback').html('').attr('title',''); // clears the feedback-area
   var tblLoad = tableLoading('#bweb');
   var div = $('<div>').load(window.location.pathname +' #oversikt tbody', {
     csrfmiddlewaretoken: $('[name="csrfmiddlewaretoken"]').val(),
@@ -171,6 +171,7 @@ function backgroundRefresh() {
       dataUpdated(tbl); // Data is now updated, lets run this to trigger any additional work on the data.
       $('#refresh-feedback').html(new Date().toLocaleString() + ' - Oppdatert!').addClass('good-txt');
     }
+    $('#refresh-feedback').attr('title',$('#refresh-feedback').html());
     btnReady('#refresh-btn', 'Oppdater &#8635;');
     tblLoad.remove();
   });
