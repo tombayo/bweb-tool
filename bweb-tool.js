@@ -152,17 +152,19 @@ function backgroundRefresh() {
   btnLoad('#refresh-btn', 'Oppdaterer');
   $('#refresh-feedback').html('').attr('title',''); // clears the feedback-area
   var tblLoad = tableLoading('#bweb');
-  var div = $('<div>').load(window.location.pathname +' #oversikt tbody', {
+  $.post(window.location.pathname, {
     csrfmiddlewaretoken: $('[name="csrfmiddlewaretoken"]').val(),
     kategori: '',
     antall: 'Alle',
   }, function(data, status){
+    var html = $($.parseHTML(data.toLowerCase())).find('#oversikt tbody');
+
     if (status !== 'success') { // Connection problem, possibly.
       $('#refresh-feedback').html(new Date().toLocaleString() +' - Problemer med nett-tilkoblingen, vennligst prøv igjen...').addClass('bad-txt');
-    } else if (div.children().length == 0) { // We have a response, but we have no table data, normally due to expired login.
+    } else if (html.children().length == 0) { // We have a response, but we have no table data, normally due to expired login.
       $('#refresh-feedback').html(new Date().toLocaleString() + ' - Det ser ut som at du har blitt logget ut, last inn siden på nytt og prøv igjen...').addClass('bad-txt');
     } else { // Everything checks out, lets feed data into the table
-      var rows = div.find('tbody').children();
+      var rows = html.children();
       var tbl = $('#bweb').DataTable().clear();
       for (row of rows) {
         tbl.row.add(row);
@@ -191,7 +193,7 @@ function filterRefresh(datatable) {
 
     column.data().unique().sort().each( function ( d, j ) {
       var searchval = column.search().replace(/[^\w\s/|ÆØÅæøå]/gi, '');
-      if(searchval.indexOf(d.toLowerCase()) !== -1){
+      if(searchval.indexOf(d) !== -1){
         select.append( '<option value="'+d+'" selected="selected">'+d+'</option>' )
       } else {
         select.append( '<option value="'+d+'">'+d+'</option>' )
