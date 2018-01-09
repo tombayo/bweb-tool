@@ -24,6 +24,7 @@ function uiBooster() {
     .addClass('nav-item')
     .children()
       .addClass('nav-item')
+      .css({width:'3em'})
       .attr('placeholder','Refnr...')
       .last()
         .replaceWith('<button type="submit" class="nav-item">Søk</button>');
@@ -31,7 +32,8 @@ function uiBooster() {
   $('#navigation > div:first').after(
     $('<div>').css({float:'left'}).append(
       $('<button id="filter-unread" type="button" title="Ordrer med uleste kommentarer.">Uleste (<span>0</span>)</button>')
-        .addClass('nav-item').on('click',function(){
+        .addClass('nav-item')
+        .on('click',function(){
           window.alert('Denne funksjonen kommer snart...');
         }),
       $('<span>').addClass('nav-item'),
@@ -43,6 +45,8 @@ function uiBooster() {
       $('<span id="refresh-feedback">').addClass('nav-item').css({overflow:'hidden'})
     )
   );
+
+  $('.nav-item').height($('li > a').first().height()); // Makes sure the height of the items are the same
 
   /**
    * Below code changes the links to apply filters instead of loading new pages/tables.
@@ -91,6 +95,7 @@ function datatableLoaded() {
     .css({float:'right',marginBottom:'0px'})
     .find('input')
       .addClass('nav-item')
+      .height($('li > a').first().height())
       .attr('placeholder','Tabellsøk...')
       .appendTo('#bweb_filter')
       .siblings('label').remove();
@@ -146,37 +151,76 @@ function tableLoading(tableid) {
 }
 
 /**
+ * A fix for a bug with firefox
+ * @see https://bugzilla.mozilla.org/show_bug.cgi?id=1322113
+ * @see https://discourse.mozilla.org/t/webextension-xmlhttprequest-issues-no-cookies-or-referrer-solved/11224/7
+ */
+function getXMLHttp(){
+  try {
+     return XPCNativeWrapper(new window.wrappedJSObject.XMLHttpRequest());
+  }
+  catch(evt){
+     return new XMLHttpRequest();
+  }
+}
+
+/**
+ * Function that performs the ajax call to the current href.
+ * Runs the supplied callback function "whensuccess" on success
+ * 
+ * @param {Function} whensuccess 
+ */
+function ajaxRefresh(whensuccess) {
+  var xhr = getXMLHttp();
+  xhr.onreadystatechange = function(){
+    if(this.readyState == XMLHttpRequest.DONE) {
+      whensuccess(this.responseText, this.status);
+    }
+  }  
+  xhr.open("POST", window.location.href, true);
+  xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+  //xhr.withCredentials = true;
+  xhr.send($.param({
+    csrfmiddlewaretoken: $('[name="csrfmiddlewaretoken"]').val(),
+    kategori: '',
+    antall: 'Alle',
+  }));
+}
+
+/**
  * Loads the full table in background and refreshes the visible content.
  */
 function backgroundRefresh() {
   btnLoad('#refresh-btn', 'Oppdaterer');
   $('#refresh-feedback').html('').attr('title',''); // clears the feedback-area
   var tblLoad = tableLoading('#bweb');
-  $.post(window.location.pathname, {
-    csrfmiddlewaretoken: $('[name="csrfmiddlewaretoken"]').val(),
-    kategori: '',
-    antall: 'Alle',
-  }, function(data, status){
-    var html = $($.parseHTML(data.toLowerCase())).find('#oversikt tbody');
+  ajaxRefresh(function(data, status){
+      var html = $($.parseHTML(data.toLowerCase())).find('#oversikt tbody');
 
-    if (status !== 'success') { // Connection problem, possibly.
-      $('#refresh-feedback').html(new Date().toLocaleString() +' - Problemer med nett-tilkoblingen, vennligst prøv igjen...').addClass('bad-txt');
-    } else if (html.children().length == 0) { // We have a response, but we have no table data, normally due to expired login.
-      $('#refresh-feedback').html(new Date().toLocaleString() + ' - Det ser ut som at du har blitt logget ut, last inn siden på nytt og prøv igjen...').addClass('bad-txt');
-    } else { // Everything checks out, lets feed data into the table
-      var rows = html.children();
-      var tbl = $('#bweb').DataTable().clear();
-      for (row of rows) {
-        tbl.row.add(row);
+      if (status !== 200) { // Something went wrong
+        console.log(status);
+        if (status === 0) { // No internet, possibly
+          $('#refresh-feedback').html(new Date().toLocaleString() +' - Problemer med nett-tilkoblingen, vennligst prøv igjen...').addClass('bad-txt');
+        } else {
+          $('#refresh-feedback').html(new Date().toLocaleString() +' - Feilkode fra server: ' + status).addClass('bad-txt');
+        }
+      } else if (html.children().length == 0) { // We have a response, but we have no table data, normally due to expired login.
+        $('#refresh-feedback').html(new Date().toLocaleString() + ' - Det ser ut som at du har blitt logget ut, last inn siden på nytt og prøv igjen...').addClass('bad-txt');
+      } else { // Everything checks out, lets feed data into the table
+        var rows = html.children();
+        var tbl = $('#bweb').DataTable().clear();
+        for (row of rows) {
+          tbl.row.add(row);
+        }
+        tbl.draw();
+        dataUpdated(tbl); // Data is now updated, lets run this to trigger any additional work on the data.
+        $('#refresh-feedback').html(new Date().toLocaleString() + ' - Oppdatert!').addClass('good-txt');
       }
-      tbl.draw();
-      dataUpdated(tbl); // Data is now updated, lets run this to trigger any additional work on the data.
-      $('#refresh-feedback').html(new Date().toLocaleString() + ' - Oppdatert!').addClass('good-txt');
+      $('#refresh-feedback').attr('title',$('#refresh-feedback').html());
+      btnReady('#refresh-btn', 'Oppdater &#8635;');
+      tblLoad.remove();
     }
-    $('#refresh-feedback').attr('title',$('#refresh-feedback').html());
-    btnReady('#refresh-btn', 'Oppdater &#8635;');
-    tblLoad.remove();
-  });
+  );
 }
 
 /**
