@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Bweb-tool",
-  "version": "2.1",
+  "version": "2.2",
   "author": "Tom Andre Munkhaug",
   "description": "Denne utvidelsen gjør det enklere å bruke NTE Marked's Bestillingsweb ved å legge til ekstra funksjonalitet.",
   "icons": {
@@ -29,16 +29,29 @@
         "https://bweb2.nteb.no/arkivert/"
       ],
       "js": [
-          "DataTables/datatables.min.js",
-          "bweb-tool.js",
-          "Chosen/chosen.jquery.min.js",
-          "Moment/moment.js",
-          "DataTables/plugins/datetime-moment.js"
+        "DataTables/datatables.min.js",
+        "bweb-tool.js",
+        "Chosen/chosen.jquery.min.js",
+        "Moment/moment.js",
+        "DataTables/plugins/datetime-moment.js",
+        "postnummer.js"
       ],
       "css": [
-          "DataTables/datatables.min.css",
-          "bweb-tools.css",
-          "Chosen/chosen.min.css"
+        "DataTables/datatables.min.css",
+        "bweb-tools.css",
+        "Chosen/chosen.min.css"
+      ]
+    },
+    {
+      "matches": [
+        "https://bweb2.nteb.no/endre/*"
+      ],
+      "js": [
+        "DataTables/datatables.min.js",
+        "bweb-tool.workorder.js"
+      ],
+      "css": [
+        "bweb-tool.workorder.js"
       ]
     }
   ]

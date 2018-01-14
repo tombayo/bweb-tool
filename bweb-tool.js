@@ -26,16 +26,14 @@ function uiBooster() {
       .addClass('nav-item')
       .css({width:'3em'})
       .attr('placeholder','Refnr...')
+      .attr('title', 'Skriv inn refnr for å gå direkte til ordre.')
       .last()
         .replaceWith('<button type="submit" class="nav-item">Søk</button>');
   $('#content > span.secret').hide(); // removes row-count at bottom of table
   $('#navigation > div:first').after(
     $('<div>').css({float:'left'}).append(
       $('<button id="filter-unread" type="button" title="Ordrer med uleste kommentarer.">Uleste (<span>0</span>)</button>')
-        .addClass('nav-item')
-        .on('click',function(){
-          window.alert('Denne funksjonen kommer snart...');
-        }),
+        .addClass('nav-item'),
       $('<span>').addClass('nav-item'),
       $('<button id="refresh-btn" type="button">Oppdater</button>').addClass('nav-item').on('click',function(){
         if (!$(this).prop('disabled')) { // check if button is disabled, to prevent double loading
@@ -96,10 +94,22 @@ function datatableLoaded() {
     .find('input')
       .addClass('nav-item')
       .height($('li > a').first().height())
-      .attr('placeholder','Tabellsøk...')
+      .attr('placeholder','Søk i tabell...')
+      .attr('title', 'Søk i tabellen under.')
       .appendTo('#bweb_filter')
       .siblings('label').remove();
   $('#bweb_filter').append('<span class="nav-item">'); // Adds some space
+
+  $('#filter-unread').on('click',function(){
+    var $btn = $(this);
+    var dt = $('#bweb').DataTable();
+    if ($btn.is('.toggled')) {
+      dt.rows(':not([style="background-color: #facb8e;"])').nodes().each(function(e){$(e).show()});
+    } else {
+      dt.rows(':not([style="background-color: #facb8e;"])').nodes().each(function(e){$(e).hide()});
+    }
+    $btn.toggleClass('toggled');
+  });
 }
 
 /**
@@ -110,9 +120,10 @@ function datatableLoaded() {
 function dataUpdated(datatable) {
   var dt = datatable;
   filterRefresh(dt); // Refresh the table's filters.
-  $('#'+ dt.context[0].sTableId +' tbody > tr').each(function() {
+  $('#'+ dt.context[0].sTableId +' tbody > tr').each(function() { // Adds a hidden comment-field as a title to each row
     $(this).attr('title', $(this).html().match(/<!--[\s\S]*?-->/g)[0].replace(/<!--|-->|<td>|<\/td>/g, '').replace(/\n/g,' '));
   });
+  $('#filter-unread > span').html(dt.rows('[style="background-color: #facb8e;"]').count());
 }
 
 /**

@@ -90,6 +90,11 @@ table#bweb .search-choice-close {
   background: #f6f6f6;
   font-weight: bold;
   line-height: normal;
+  outline: none;
+}
+.nav-item.toggled {
+  background: #0099ff; 
+  color: #fff;
 }
 input.nav-item {
   background-image: linear-gradient(rgb(238, 238, 238) 1%, rgb(255, 255, 255) 15%);
