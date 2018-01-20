@@ -48,13 +48,16 @@ function uiBooster() {
 
   /**
    * Below code changes the links to apply filters instead of loading new pages/tables.
-   * Due to slow backend this is faster for both client and server.
    */ 
   $('#navigation > div:first a').each(function() {
     var filter = $(this).attr('href').replace(/[^\w\s]/gi, '');
-    $(this).attr('href','#').on('click', function(){
-      filterStatus(filter);
-    });
+    if (window.location.pathname.replace(/[/]/gi, '') === 'arkivert') {
+      $(this).attr('href',$(this).attr('href').replace(/[/]/gi, '/#'));
+    } else {
+      $(this).attr('href','#').on('click', function(){
+        filterStatus(filter);
+      });
+    }
   });
 }
 
@@ -84,8 +87,11 @@ function btnReady(id,text) {
  * Runs when DataTable is fully loaded, hence used to do stuff with DataTable
  */
 function datatableLoaded() {
-  backgroundRefresh(); // Fires a refresh of the table in the background, this is to load the rest of the table.
   $('.chosen-select').chosen({width: "-webkit-fill-available"}); // Applies Chosen to the select-fields.
+
+  if (window.location.hash) { // a hash is used to imply a filter on pageload, lets activate it
+    filterStatus(window.location.hash.replace(/[#]/, ''));
+  }
 
   // Moves the filter search field to the navbar
   $('#bweb_filter')
@@ -209,7 +215,7 @@ function backgroundRefresh() {
       var html = $($.parseHTML(data.toLowerCase())).find('#oversikt tbody');
 
       if (status !== 200) { // Something went wrong
-        console.log(status);
+        console.log('AjaxStatus:', status);
         if (status === 0) { // No internet, possibly
           $('#refresh-feedback').html(new Date().toLocaleString() +' - Problemer med nett-tilkoblingen, vennligst prøv igjen...').addClass('bad-txt');
         } else {
@@ -235,7 +241,7 @@ function backgroundRefresh() {
 }
 
 /**
- * Loads our filter functions on a datatable
+ * Updates the filter options based on table data.
  * 
  * @todo Use Datatable count() to update the numbers in nav.
  * 
@@ -256,6 +262,45 @@ function filterRefresh(datatable) {
     });
 
     select.trigger("chosen:updated"); // Content of select updated, lets notify chosen to redraw.
+  });
+
+  var col4 = datatable.column(4);
+  var sel4 = $(col4.footer()).find('select').empty().append('<option value="">Alle</option>');
+  var municipalities = [];
+
+  col4.data().unique().sort().each( function (d, j) { // Build the array of municipalities based the towns in column 4
+    if (typeof(poststed[d]) === 'undefined') { // Place doesn't exist, usually a typo
+       poststed[d] = 'ukjente'; // put all unknowns into a fake municipality
+    }
+    if (municipalities.indexOf(poststed[d]) === -1) {
+      municipalities.push(poststed[d]);
+    }
+  });
+  var searchval = col4.search().replace(/[^\w\s/|ÆØÅæøå]/gi, '').split('|'); // Removes special chars in the search-string that is applied to column 4
+  for (muni of municipalities.sort()) {
+    var places = mapReverseLookup(poststed, muni); // finds all towns for a municipality
+    var inarr = false;
+
+    for (place of places) { // Checks if search-string contains any of the towns for this municipality
+      if (searchval.indexOf(place[0]) !== -1) {
+        inarr = true;
+        break;
+      }
+    }
+    if(inarr){ // if so put the municipality as selected.
+      sel4.append( '<option value="'+muni+'" selected="selected">'+muni+'</option>' )
+    } else {
+      sel4.append( '<option value="'+muni+'">'+muni+'</option>' )
+    }
+  }
+
+  sel4.trigger("chosen:updated");
+
+}
+
+function mapReverseLookup(objmap, search) {
+  return Object.entries(objmap).filter(function (pair){
+    return pair[1] == search;
   });
 }
 
@@ -291,8 +336,6 @@ $(function(){
   newtable.insertBefore('#oversikt');
   $('#oversikt').remove(); // Remove original table (has tablesorter active on it)
 
- 
-
   /**
    * Sets up DataTable on our fresh table
    */
@@ -309,28 +352,29 @@ $(function(){
       }
     ],
     initComplete: function () {
-      this.api().columns([1,3,4,5,7,8,9,10]).every( function () {
+      this.api().columns([1,3,5,7,8,9,10]).every( function () { // Prepares the column filters
         var column = this;
         var select = $('<select data-placeholder="Filter.." class="chosen-select" multiple><option value="">Alle</option></select>')
           .appendTo( $(column.footer()).empty() )
           .on( 'change', function () {
             var val = $(this).val().join('|');
-            column
-              .search( val ? '^'+val+'$' : '', true, false )
-              .draw();
+            column.search( val ? '^'+val+'$' : '', true, false ).draw();
           });
-    
-        column.data().unique().sort().each( function ( d, j ) {
-          var searchval = column.search().replace(/[^\w\s/|ÆØÅæøå]/gi, '');
-          if(searchval.indexOf(d) !== -1){
-            select.append( '<option value="'+d+'" selected="selected">'+d+'</option>' )
-          } else {
-            select.append( '<option value="'+d+'">'+d+'</option>' )
-          }
-        });
       });
+      
+      var col4 = this.api().column(4); // Custom filtering for column 4 (postal town/municipality)
+      var select4 = $('<select data-placeholder="Kommune.." class="chosen-select" multiple><option value="">Alle</option></select>')
+        .appendTo( $(col4.footer()).empty() )
+        .on('change', function() {
+          var val = $(this).val().map(function(muni){ // Converts municipalities to all towns within
+            return mapReverseLookup(poststed, muni).map(val => val[0]).join('$|^');
+          }).join('$|^');
+          col4.search( val ? '^'+val+'$' : '', true, false ).draw();
+        });
+
+      dataUpdated(this.api()); // Data has been added to the table, this triggers more data-handling.
       datatableLoaded(); // Everything is now loaded, lets run this to add more functionality.
-      dataUpdated(this.api()); // We have also added data in the table.
+      backgroundRefresh(); // Fires a refresh of the table in the background, this is to load the rest of the table.
     }
   });
 });

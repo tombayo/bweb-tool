@@ -34,7 +34,7 @@
         "Chosen/chosen.jquery.min.js",
         "Moment/moment.js",
         "DataTables/plugins/datetime-moment.js",
-        "postnummer.js"
+        "poststed-til-kommune.js"
       ],
       "css": [
         "DataTables/datatables.min.css",
