@@ -248,7 +248,7 @@ function backgroundRefresh() {
  * @param {DataTable} datatable datatable api
  */
 function filterRefresh(datatable) {
-  datatable.columns([1,3,4,5,7,8,9,10]).every( function () {
+  datatable.columns([1,3,4,5,8,9,10,11]).every( function () {
     var column = this;
     var select = $(column.footer()).find('select').empty().append('<option value="">Alle</option>'); // Clears the select to re-add based on new column data
 
@@ -352,7 +352,7 @@ $(function(){
       }
     ],
     initComplete: function () {
-      this.api().columns([1,3,5,7,8,9,10]).every( function () { // Prepares the column filters
+      this.api().columns([1,3,5,8,9,10,11]).every( function () { // Prepares the column filters
         var column = this;
         var select = $('<select data-placeholder="Filter.." class="chosen-select" multiple><option value="">Alle</option></select>')
           .appendTo( $(column.footer()).empty() )
