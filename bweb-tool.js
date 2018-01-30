@@ -347,7 +347,7 @@ $(function(){
     "paging": false, // Defines if paging should be enabled
     "columnDefs": [ // Column number 6 is set to be invisible
       {
-          "targets": [ 6 ],
+          "targets": [ 6, 7 ],
           "visible": false
       }
     ],

@@ -107,8 +107,20 @@ function addCustomerIdUrl() {
   )
 }
 
+function uiImprovements() {
+  $('tr').filter(`:nth-child(3),
+                  :nth-child(4), 
+                  :nth-child(8), 
+                  :nth-child(13), 
+                  :nth-child(17), 
+                  :nth-child(22),
+                  :nth-child(27)
+                `).hide()
+  $($('tbody > tr')[27]).hide()
+}
 
 $(function(){
   addAddressUrl();
   addCustomerIdUrl();
+  uiImprovements();
 });
