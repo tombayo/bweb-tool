@@ -108,15 +108,19 @@ function addCustomerIdUrl() {
 }
 
 function uiImprovements() {
-  $('tr').filter(`:nth-child(3),
-                  :nth-child(4), 
-                  :nth-child(8), 
-                  :nth-child(13), 
-                  :nth-child(17), 
-                  :nth-child(22),
-                  :nth-child(27)
-                `).hide()
+  var tblrows = $('table').first().children().children()
+
+  /*Rewrite below:
+  $(tblrows).filter(`:nth-child(3),
+                     :nth-child(4), 
+                     :nth-child(8), 
+                     :nth-child(13), 
+                     :nth-child(17), 
+                     :nth-child(22),
+                     :nth-child(27)
+                    `).hide()
   $($('tbody > tr')[27]).hide()
+  $($('tbody > tr')[28]).*/
 }
 
 $(function(){
