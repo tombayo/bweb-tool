@@ -100,6 +100,7 @@ function datatableLoaded() {
     .find('input')
       .addClass('nav-item')
       .height($('li > a').first().height())
+      .css('max-width','150px')
       .attr('placeholder','Søk i tabell...')
       .attr('title', 'Søk i tabellen under.')
       .appendTo('#bweb_filter')
@@ -248,7 +249,7 @@ function backgroundRefresh() {
  * @param {DataTable} datatable datatable api
  */
 function filterRefresh(datatable) {
-  datatable.columns([1,3,4,5,8,9,10,11]).every( function () {
+  datatable.columns([1,3,4,5,7,8,9,10,11]).every( function () {
     var column = this;
     var select = $(column.footer()).find('select').empty().append('<option value="">Alle</option>'); // Clears the select to re-add based on new column data
 
@@ -341,18 +342,18 @@ $(function(){
    */
   $.fn.dataTable.moment('DD.MM.YYYY HH:mm'); // Prepare Moment.js for sorting datetime
   $('#bweb').DataTable({
-    "stateSave": true, // Enables the state of the filters and sortings to be saved for the next session
+    "stateSave": false, // Enables the state of the filters and sortings to be saved for the next session
     "language": {"url":"//cdn.datatables.net/plug-ins/1.10.16/i18n/Norwegian-Bokmal.json"}, // Adds l10n
     "order": [[ 0, "desc" ]], // Selects the initial ordering of the table
     "paging": false, // Defines if paging should be enabled
     "columnDefs": [ // Column number 6 is set to be invisible
       {
-          "targets": [ 6, 7 ],
+          "targets": [ 6 ],
           "visible": false
       }
     ],
     initComplete: function () {
-      this.api().columns([1,3,5,8,9,10,11]).every( function () { // Prepares the column filters
+      this.api().columns([1,3,5,7,8,9,10,11]).every( function () { // Prepares the column filters
         var column = this;
         var select = $('<select data-placeholder="Filter.." class="chosen-select" multiple><option value="">Alle</option></select>')
           .appendTo( $(column.footer()).empty() )
