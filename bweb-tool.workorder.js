@@ -110,6 +110,7 @@ function addCustomerIdUrl() {
 function uiImprovements() {
   $('th').hide()
   $('input[type="submit"]:not(:first)').first().hide()
+  $('table').first().css({maxWidth:'650px'})
 }
 
 $(function(){

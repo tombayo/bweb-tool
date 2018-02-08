@@ -149,7 +149,7 @@ function filterStatus(status) {
  */
 function tableLoading(tableid) {
   var head = $(tableid + ' thead');
-  var row = $('<th colspan="10">').css({
+  var row = $('<th colspan="11">').css({
     borderBottom:'0',
     letterSpacing:'20px',
     textAlign:'center'
@@ -254,6 +254,8 @@ function filterRefresh(datatable) {
     var select = $(column.footer()).find('select').empty().append('<option value="">Alle</option>'); // Clears the select to re-add based on new column data
 
     column.data().unique().sort().each( function ( d, j ) {
+      if (!d) { return; }  // If value is empty, we dont want it as an option
+
       var searchval = column.search().replace(/[^\w\s/|ÆØÅæøå]/gi, '');
       if(searchval.indexOf(d) !== -1){
         select.append( '<option value="'+d+'" selected="selected">'+d+'</option>' )
