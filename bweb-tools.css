@@ -28,7 +28,7 @@ table#bweb thead .sorting_desc_disabled {
   overflow: hidden;
   border-top: 1px solid rgb(221, 221, 221);
 }
-#bweb td:nth-child(7), #bweb > tfoot th:nth-child(7) {
+#bweb td:nth-child(8), #bweb > tfoot th:nth-child(7) {
   text-transform: uppercase; 
 }
 #bweb th {
