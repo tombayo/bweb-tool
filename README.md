@@ -13,7 +13,7 @@ En Nettleser-utvidelse som gjør det enklere å bruke NTE Marked's Bestillingswe
 * Bruker du Firefox finnes den som en Addon hos Mozilla: [Bweb-tool for Firefox](https://addons.mozilla.org/en-US/firefox/addon/bweb-tool/).
 
 ## Utvikling
-* Gjeldende versjon er 2.3.
+* Gjeldende versjon er 2.4.
 * Feil rapporteres enten på [GitHub](https://github.com/tombayo/bweb-tool) eller på [mail](mailto:bweb-tool.dev@tombayo.com).
 * Forslag til endringer/forbedringer kan også sendes inn på [GitHub](https://github.com/tombayo/bweb-tool) eller på [mail](mailto:bweb-tool.dev@tombayo.com).
 * Alle bidrag til utviklingen mottas med stor takk :)
