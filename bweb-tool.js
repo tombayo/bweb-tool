@@ -15,6 +15,10 @@ function uiBooster() {
   ).insertAfter('#header > div:first');
   $('#header > div:last > b:last').hide().next().next().hide(); // removes back link
   $('#header > div:last > b:last')[0].nextSibling.remove(); // removes search field label
+  $('#header > div:last').prepend(
+    $('<span id="refresh-feedback">').css({fontStyle:'italic',fontSize:'12px'}),
+    $('<b>&nbsp;|</b>')
+  );
   $('#navigation > div:last > ul > li:first').remove(); // Removes the vanilla search button, replaced with another one below.
   $('#header form')
     .appendTo(
@@ -39,8 +43,7 @@ function uiBooster() {
         if (!$(this).prop('disabled')) { // check if button is disabled, to prevent double loading
           backgroundRefresh();
         }
-      }),
-      $('<span id="refresh-feedback">').addClass('nav-item').css({overflow:'hidden'})
+      })
     )
   );
 
