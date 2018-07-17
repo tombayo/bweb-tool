@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Bweb-tool",
-  "version": "2.4",
+  "version": "2.5",
   "author": "Tom Andre Munkhaug",
   "description": "Denne utvidelsen gjør det enklere å bruke NTE Marked's Bestillingsweb ved å legge til ekstra funksjonalitet.",
   "icons": {
@@ -49,9 +49,15 @@
       "js": [
         "DataTables/datatables.min.js",
         "bweb-tool.workorder.js"
+      ]
+    },
+    {
+      "matches": [
+        "https://bweb2.nteb.no/kommentar/*"  
       ],
-      "css": [
-        "bweb-tool.workorder.js"
+      "js": [
+        "DataTables/datatables.min.js",
+        "bweb-tool.workorder.comment.js"
       ]
     }
   ]
