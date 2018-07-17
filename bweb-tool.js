@@ -213,7 +213,7 @@ function ajaxRefresh(whensuccess) {
  */
 function backgroundRefresh() {
   btnLoad('#refresh-btn', 'Oppdaterer');
-  $('#refresh-feedback').html('').attr('title',''); // clears the feedback-area
+  $('#refresh-feedback').html('Venter på server...').attr('title',''); // clears the feedback-area
   var tblLoad = tableLoading('#bweb');
   ajaxRefresh(function(data, status){
       var html = $($.parseHTML(data.toLowerCase())).find('#oversikt tbody');
@@ -235,7 +235,7 @@ function backgroundRefresh() {
         }
         tbl.draw();
         dataUpdated(tbl); // Data is now updated, lets run this to trigger any additional work on the data.
-        $('#refresh-feedback').html(new Date().toLocaleString() + ' - Oppdatert!').addClass('good-txt');
+        $('#refresh-feedback').html(new Date().toLocaleString() + ' - Oppdatert!').removeClass('bad-txt').addClass('good-txt');
       }
       $('#refresh-feedback').attr('title',$('#refresh-feedback').html());
       btnReady('#refresh-btn', 'Oppdater &#8635;');
