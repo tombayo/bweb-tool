@@ -11,12 +11,13 @@ function Workorder(data) {
     this.customer   = data[ 3]
     this.location   = data[ 4]
     this.address    = data[ 5]
-    this.contractor = data[ 6]
-    this.technician = data[ 7]
-    this.product    = data[ 8]
-    this.department = data[ 9]
-    this.handler    = data[10]
-    this.status     = data[11]
+    this.shortdesc  = data[ 6]
+    this.contractor = data[ 7]
+    this.technician = data[ 8]
+    this.product    = data[ 9]
+    this.department = data[10]
+    this.handler    = data[11]
+    this.status     = data[12]
   } else {
     Object.assign(this, data)
   }
@@ -25,14 +26,16 @@ function Workorder(data) {
 /**
  * Takes the table data and turns it into a database
  * 
- * @param {Array} data Data from DataTable's .data() method
+ * @param {DataTable} datatable
  */
-function tableToDatabase(data) {
+function tableToDatabase(datatable) {
+  var data = datatable.data()
   var database = {}
   for (let i=0;i<data.length;i++) {
-    let row = data[i]
-    let id = $(row[0]).html()
-    database[id] = new Workorder(row)
+    let col = data[i]
+    let id = $(col[0]).html()
+    col[0] = id
+    database[id] = new Workorder(col)
   }
   return database
 }
@@ -48,12 +51,13 @@ function databaseToTable(db) {
   var dataarray = []
   for (row in db) {
     dataarray.push([
-      '<a href="/endre/'+db[row].id+'">'+db[row].id+'"</a>',
+      '<a href="/endre/'+db[row].id+'">'+db[row].id+'</a>',
       db[row].localRef,
       db[row].orderDate,
       db[row].customer,
       db[row].location,
       db[row].address,
+      db[row].shortdesc,
       db[row].contractor,
       db[row].technician,
       db[row].product,
@@ -63,10 +67,6 @@ function databaseToTable(db) {
     ])
   }
   return dataarray
-}
-
-function workorderTableToDatabase() {
-
 }
 
 function updateDatabase(database, newdata) {
@@ -93,14 +93,19 @@ function saveDatabase(database) {
   for (row in database) {
     toStorage.push({...database[row]})
   }
-  localStorage.setItem('bwebDB', JSON.stringify(toStorage))
+  localStorage.setItem('bwebDB_v2.5', JSON.stringify(toStorage))
 }
 
 function loadDatabase() {
-  var data = JSON.parse(localStorage.getItem('bwebDB'))
+  var data = JSON.parse(localStorage.getItem('bwebDB_v2.5'))
   var database = {}
-  for (row of data) {
-    database[row.id] = new Workorder(row)
+
+  if (data == null) {
+    return false
+  } else {
+    for (row of data) {
+      database[row.id] = new Workorder(row)
+    }
+    return database
   }
-  return database
 }

@@ -2,18 +2,91 @@
 <html>
   <head>
     <meta charset="utf8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Bweb-tool</title>
-    <style>
-      body {
-        min-width:300px;
-      }
-    </style>
+    <script src="lib/jQuery-3.3.1/jquery-3.3.1.min.js"></script>
+    <script src="lib/bootstrap-4.1.3-dist/js/bootstrap.min.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="lib/bootstrap-4.1.3-dist/css/bootstrap.min.css"/>
+
+    <script src="popup.js"></script>
   </head>
-  <body>
-    <p>Bweb-tool er aktivert!</p>
-    <p>Du vil nå få ekstra funksjonalitet på <a href="https://bweb2.nteb.no">Bestillingsweb</a>.</p>
-    <hr>
-    <p>Oppdaget feil eller har forslag til forbedringer?<br>
-    Besøk prosjektet på <a href="https://github.com/tombayo/bweb-tool">GitHub</a>.</p>
+  <body style="min-width:400px;">
+    <div class="container">
+      <p>Bweb-tool er aktivert!</p>
+      <p>Du vil nå få ekstra funksjonalitet på <a href="https://bweb2.nteb.no">Bestillingsweb</a>.</p>
+      <hr>
+      <h5>Innstillinger:</h5>
+      <form>
+        <div class="form-group row">
+          <label for="statesave" class="col-6 col-form-label">Lagre søk/filtrering?</label>
+          <div class="col-6">
+            <select class="form-control form-control-sm" id="statesave">
+              <option value="false">Nei</option>
+              <option value="true">Ja</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Skjul følgende kolonner:</label>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="column1" name="columns" value="0">
+            <label class="form-check-label" for="column1">NTE ref</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="column2" name="columns" value="1">
+            <label class="form-check-label" for="column2">Ekstern ref</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="column3" name="columns" value="2">
+            <label class="form-check-label" for="column3">Reg. dato</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="column4" name="columns" value="3">
+            <label class="form-check-label" for="column4">Kunde</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="column5" name="columns" value="4">
+            <label class="form-check-label" for="column5">Poststed</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="column6" name="columns" value="5">
+            <label class="form-check-label" for="column6">Adresse</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="column7" name="columns" value="6">
+            <label class="form-check-label" for="column7">Beskrivelse</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="column8" name="columns" value="7">
+            <label class="form-check-label" for="column8">Entreprenør</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="column9" name="columns" value="8">
+            <label class="form-check-label" for="column9">Montør</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="column10" name="columns" value="9">
+            <label class="form-check-label" for="column10">Produkt</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="column11" name="columns" value="10">
+            <label class="form-check-label" for="column11">Kategori</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="column12" name="columns" value="11">
+            <label class="form-check-label" for="column12">Bestilt av</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="column13" name="columns" value="12">
+            <label class="form-check-label" for="column13">Status</label>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Lagre</button>
+      </form>
+      <hr>
+      <p>Oppdaget feil eller har forslag til forbedringer?<br>
+      Besøk prosjektet på <a href="https://github.com/tombayo/bweb-tool">GitHub</a>.</p>
+    </div>
   </body>
 </html>
