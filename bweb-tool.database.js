@@ -93,11 +93,11 @@ function saveDatabase(database) {
   for (row in database) {
     toStorage.push({...database[row]})
   }
-  localStorage.setItem('bwebDB_v2.5', JSON.stringify(toStorage))
+  localStorage.setItem('bwebDB_v'+chrome.runtime.getManifest().version, JSON.stringify(toStorage))
 }
 
 function loadDatabase() {
-  var data = JSON.parse(localStorage.getItem('bwebDB_v2.5'))
+  var data = JSON.parse(localStorage.getItem('bwebDB_v'+chrome.runtime.getManifest().version))
   var database = {}
 
   if (data == null) {
