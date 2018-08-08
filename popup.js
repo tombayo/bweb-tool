@@ -26,11 +26,18 @@ function saveSettings(e) {
     chrome.tabs.executeScript(null,{code:"settingsUpdated()"})
     window.close()
   })
+}
 
+function resetAll() {
+  chrome.storage.sync.clear(()=>{
+    chrome.tabs.executeScript(null,{code:"settingsUpdated()"})
+    window.close()
+  })
 }
 
 $(function(){
   loadSettings()
 
   $('form').on('submit',(e)=>saveSettings(e))
+  $('#resetAll').on('click',()=>resetAll())
 })

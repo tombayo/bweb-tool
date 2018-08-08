@@ -109,3 +109,7 @@ function loadDatabase() {
     return database
   }
 }
+
+function clearDatabase() {
+  localStorage.removeItem('bwebDB_v'+chrome.runtime.getManifest().version)
+}
