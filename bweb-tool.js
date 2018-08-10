@@ -209,6 +209,9 @@ function dataUpdated(datatable) {
 
   $('#filter-unread > span').html(dt.rows('[style="background-color: #facb8e;"]').count());
 
+  //$(dt.row(4).node()).attr('title',dt.row(4).data()[6])
+
+  
 }
 
 /**

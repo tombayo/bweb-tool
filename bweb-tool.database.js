@@ -18,6 +18,7 @@ function Workorder(data) {
     this.department = data[10]
     this.handler    = data[11]
     this.status     = data[12]
+    this.rowcolor   = data[13]
   } else {
     Object.assign(this, data)
   }
@@ -32,10 +33,11 @@ function tableToDatabase(datatable) {
   var data = datatable.data()
   var database = {}
   for (let i=0;i<data.length;i++) {
-    let col = data[i]
-    let id = $(col[0]).html()
-    col[0] = id
-    database[id] = new Workorder(col)
+    let row = data[i]
+    let id = $(row[0]).html()
+    row[0] = id
+    row[13] = $(datatable.row(i).node()).attr('style')
+    database[id] = new Workorder(row)
   }
   return database
 }
@@ -50,8 +52,9 @@ function tableToDatabase(datatable) {
 function databaseToTable(db) {
   var dataarray = []
   for (row in db) {
+    var rowcolor = (typeof(db[row].rowcolor) == 'undefined')?'':db[row].rowcolor
     dataarray.push([
-      '<a href="/endre/'+db[row].id+'">'+db[row].id+'</a>',
+      '<a data-rowcolor="'+rowcolor+'" href="/endre/'+db[row].id+'">'+db[row].id+'</a>',
       db[row].localRef,
       db[row].orderDate,
       db[row].customer,
