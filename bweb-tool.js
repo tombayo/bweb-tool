@@ -204,13 +204,15 @@ function datatableLoaded() {
 function dataUpdated(datatable) {
   var dt = datatable;
   refreshDatabase(dt); // Refresh the database with the current datatable content.
-  
+  refreshDatatableFromDB(dt); // Replace the table with data from the database.
   filterRefresh(dt); // Refresh the table's filters.
 
   $('#filter-unread > span').html(dt.rows('[style="background-color: #facb8e;"]').count());
-
+  $('[data-rowcolor][data-rowcolor!=""]').each(function(){
+    $(this).parents('tr').attr('style',$(this).data('rowcolor'))
+  })
   dt.rows().every(index=>{
-    $(dt.row(index).node()).attr('title',dt.row(index).data()[6])
+    $(dt.row(index).node()).attr('title',dt.row(index).data()[6]) // Adds the short desc. as a title to the row
   })
   
 }
@@ -351,6 +353,7 @@ function backgroundRefresh() {
         tbl.row.add(row);
       }
       tbl.draw();
+      clearDatabase(); // Table contains the freshest data, lets clear the database to remove any old data.
       dataUpdated(tbl); // Data is now updated, lets run this to trigger any additional work on the data.
       $('#refresh-feedback').html(new Date().toLocaleString() + ' - Oppdatert!').removeClass('bad-txt').addClass('good-txt');
     }
