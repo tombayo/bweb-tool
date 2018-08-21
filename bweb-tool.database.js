@@ -96,11 +96,11 @@ function saveDatabase(database) {
   for (row in database) {
     toStorage.push({...database[row]})
   }
-  localStorage.setItem('bwebDB_v'+chrome.runtime.getManifest().version, JSON.stringify(toStorage))
+  localStorage.setItem('bwebDB_v'+chrome.runtime.getManifest().version+'_'+window.location.pathname.replace(/[/]/gi, ''), JSON.stringify(toStorage))
 }
 
 function loadDatabase() {
-  var data = JSON.parse(localStorage.getItem('bwebDB_v'+chrome.runtime.getManifest().version))
+  var data = JSON.parse(localStorage.getItem('bwebDB_v'+chrome.runtime.getManifest().version+'_'+window.location.pathname.replace(/[/]/gi, '')))
   var database = {}
 
   if (data == null) {
@@ -114,5 +114,5 @@ function loadDatabase() {
 }
 
 function clearDatabase() {
-  localStorage.removeItem('bwebDB_v'+chrome.runtime.getManifest().version)
+  localStorage.removeItem('bwebDB_v'+chrome.runtime.getManifest().version+'_'+window.location.pathname.replace(/[/]/gi, ''))
 }

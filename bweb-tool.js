@@ -15,12 +15,12 @@ function uiBooster() {
   ).insertAfter('#header > div:first');
   $('#header > div:last > b:last').hide().next().next().hide(); // removes back link
   $('#header > div:last > b:last')[0].nextSibling.remove(); // removes search field label
-  $('#header > div:last').prepend(
+  $('#header > div:last').prepend( // Adds the space for feedbacks
     $('<span id="refresh-feedback">').css({fontStyle:'italic',fontSize:'12px'}),
     $('<b>&nbsp;|</b>')
   );
   $('#navigation > div:last > ul > li:first').remove(); // Removes the vanilla search button, replaced with another one below.
-  $('#header form')
+  $('#header form')  // Moves the search-field and -button to be inline in the navbar
     .appendTo(
       $('<div>')
       .css({float:'right'})
@@ -34,7 +34,7 @@ function uiBooster() {
       .last()
         .replaceWith('<button type="submit" class="nav-item">Søk</button>');
   $('#content > span.secret').hide(); // removes row-count at bottom of table
-  $('#navigation > div:first').after(
+  $('#navigation > div:first').after( // Adds button for refreshing table and sorting by unread comments.
     $('<div>').css({float:'left'}).append(
       $('<button id="filter-unread" type="button" title="Ordrer med uleste kommentarer.">Uleste (<span>0</span>)</button>')
         .addClass('nav-item'),
