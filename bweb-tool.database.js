@@ -30,7 +30,6 @@ function Workorder(data) {
  * @param {DataTable} datatable
  */
 function tableToDatabase(datatable) {
-  console.time('tableToDatabase')
   var data = $.extend(true,[],datatable.data().toArray())
   var database = {}
   for (let i=0;i<data.length;i++) {
@@ -39,7 +38,6 @@ function tableToDatabase(datatable) {
     row[13] = $(datatable.row(i).node()).attr('style')
     database[row[0]] = new Workorder(row)
   }
-  console.timeEnd('tableToDatabase')
   return database
 }
 
