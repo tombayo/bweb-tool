@@ -104,6 +104,7 @@ function initDatatable(settings){
     "language": {"url":"//cdn.datatables.net/plug-ins/1.10.16/i18n/Norwegian-Bokmal.json"}, // Adds l10n
     "order": [[ 0, "desc" ]], // Selects the initial ordering of the table
     "paging": false, // Defines if paging should be enabled
+    "deferRender": true, // Should improve performance slightly
     "columnDefs": [ // Column number 6 is set to be invisible
       {
           "targets": (typeof(settings.hiddenCols) == 'undefined') ? [6,7] : settings.hiddenCols,
@@ -113,7 +114,7 @@ function initDatatable(settings){
     initComplete: function () {
       this.api().columns([1,3,5,7,8,9,10,11,12]).every( function () { // Prepares the column filters
         var column = this;
-        var select = $('<select data-placeholder="Filter.." class="chosen-select" multiple><option value="">Alle</option></select>')
+        $('<select data-placeholder="Filter.." class="chosen-select" multiple><option value="">Alle</option></select>')
           .appendTo( $(column.footer()).empty() )
           .on( 'change', function () {
             var val = $(this).val().join('|');
@@ -122,7 +123,7 @@ function initDatatable(settings){
       });
       
       var col4 = this.api().column(4); // Custom filtering for column 4 (postal town/municipality)
-      var select4 = $('<select data-placeholder="Kommune.." class="chosen-select" multiple><option value="">Alle</option></select>')
+      $('<select data-placeholder="Kommune.." class="chosen-select" multiple><option value="">Alle</option></select>')
         .appendTo( $(col4.footer()).empty() )
         .on('change', function() {
           var val = $(this).val().map(function(muni){ // Converts municipalities to all towns within
@@ -352,9 +353,9 @@ function backgroundRefresh() {
       for (row of rows) {
         tbl.row.add(row);
       }
-      tbl.draw();
       clearDatabase(); // Table contains the freshest data, lets clear the database to remove any old data.
       dataUpdated(tbl); // Data is now updated, lets run this to trigger any additional work on the data.
+
       $('#refresh-feedback').html(new Date().toLocaleString() + ' - Oppdatert!').removeClass('bad-txt').addClass('good-txt');
     }
     $('#refresh-feedback').attr('title',$('#refresh-feedback').html());
