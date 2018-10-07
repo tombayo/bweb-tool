@@ -67,6 +67,18 @@
         "lib/jQuery-3.3.1/jquery-3.3.1.min.js",
         "bweb-tool.workorder.comment.js"
       ]
+    },
+    {
+      "matches": [
+        "https://bweb2.nteb.no/upload/*"
+      ],
+      "js": [
+        "lib/jQuery-3.3.1/jquery-3.3.1.min.js",
+        "bweb-tool.workorder.upload.js"
+      ],
+      "css": [
+        "bweb-tools.css"
+      ]
     }
   ]
 }

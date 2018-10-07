@@ -205,7 +205,7 @@ function datatableLoaded() {
 function dataUpdated(datatable) {
   var dt = datatable;
   refreshDatabase(dt); // Refresh the database with the current datatable content.
-  refreshDatatableFromDB(dt); // Replace the table with data from the database.
+  //refreshDatatableFromDB(dt); // Replace the table with data from the database.
   filterRefresh(dt); // Refresh the table's filters.
 
   $('#filter-unread > span').html(dt.rows('[style="background-color: #facb8e;"]').count());
