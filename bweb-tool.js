@@ -204,7 +204,7 @@ function datatableLoaded() {
  */
 function dataUpdated(datatable) {
   var dt = datatable;
-  refreshDatabase(dt); // Refresh the database with the current datatable content.
+  //refreshDatabase(dt); // Refresh the database with the current datatable content.
   //refreshDatatableFromDB(dt); // Replace the table with data from the database.
   filterRefresh(dt); // Refresh the table's filters.
 
@@ -216,6 +216,7 @@ function dataUpdated(datatable) {
     $(dt.row(index).node()).attr('title',dt.row(index).data()[6]) // Adds the short desc. as a title to the row
   })
   
+  dt.draw();
 }
 
 /**
@@ -243,7 +244,7 @@ function refreshDatatableFromDB(datatable) {
   if (database) {
     var data = databaseToTable(database)
     datatable.clear()
-    datatable.rows.add(data).draw()
+    datatable.rows.add(data)
   }
 }
 
@@ -353,7 +354,7 @@ function backgroundRefresh() {
       for (row of rows) {
         tbl.row.add(row);
       }
-      clearDatabase(); // Table contains the freshest data, lets clear the database to remove any old data.
+      //clearDatabase(); // Table contains the freshest data, lets clear the database to remove any old data.
       dataUpdated(tbl); // Data is now updated, lets run this to trigger any additional work on the data.
 
       $('#refresh-feedback').html(new Date().toLocaleString() + ' - Oppdatert!').removeClass('bad-txt').addClass('good-txt');
