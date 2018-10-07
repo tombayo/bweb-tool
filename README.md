@@ -6,6 +6,8 @@ En Nettleser-utvidelse som gjør det enklere å bruke NTE Marked's Bestillingswe
 * Avansert søking direkte i ordre-tabellen.
 * Detaljert filtrering og sortering av kolonner i ordre-tabellen.
 * Flere forbedringer til brukergrensesnittet.
+* Skjul/Vis kolonner.
+* Multi-fil-opplastning på ordrene.
 * Mye mer kommer...
 
 ## Installasjon
@@ -13,7 +15,7 @@ En Nettleser-utvidelse som gjør det enklere å bruke NTE Marked's Bestillingswe
 * Bruker du Firefox finnes den som en Addon hos Mozilla: [Bweb-tool for Firefox](https://addons.mozilla.org/en-US/firefox/addon/bweb-tool/).
 
 ## Utvikling
-* Gjeldende versjon er 2.4.
+* Gjeldende versjon er 2.5.
 * Feil rapporteres enten på [GitHub](https://github.com/tombayo/bweb-tool) eller på [mail](mailto:bweb-tool.dev@tombayo.com).
 * Forslag til endringer/forbedringer kan også sendes inn på [GitHub](https://github.com/tombayo/bweb-tool) eller på [mail](mailto:bweb-tool.dev@tombayo.com).
 * Alle bidrag til utviklingen mottas med stor takk :)
