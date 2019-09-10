@@ -5,20 +5,21 @@
  */
 function Workorder(data) {
   if (Array.isArray(data)) {
-    this.id         = data[ 0]
-    this.localRef   = data[ 1]
-    this.orderDate  = data[ 2]
-    this.customer   = data[ 3]
-    this.location   = data[ 4]
-    this.address    = data[ 5]
-    this.shortdesc  = data[ 6]
-    this.contractor = data[ 7]
-    this.technician = data[ 8]
-    this.product    = data[ 9]
-    this.department = data[10]
-    this.handler    = data[11]
-    this.status     = data[12]
-    this.rowcolor   = data[13]
+    this.warning    = data[ 0]
+    this.id         = data[ 1]
+    this.localRef   = data[ 2]
+    this.orderDate  = data[ 3]
+    this.customer   = data[ 4]
+    this.location   = data[ 5]
+    this.address    = data[ 6]
+    this.shortdesc  = data[ 7]
+    this.contractor = data[ 8]
+    this.technician = data[ 9]
+    this.product    = data[10]
+    this.department = data[11]
+    this.handler    = data[12]
+    this.status     = data[13]
+    this.rowcolor   = data[14]
   } else {
     Object.assign(this, data)
   }
@@ -35,7 +36,7 @@ function tableToDatabase(datatable) {
   for (let i=0;i<data.length;i++) {
     let row = data[i]
     row[0] = row[0].replace(/<[^>]+>/g, '');
-    row[13] = $(datatable.row(i).node()).attr('style')
+    row[14] = $(datatable.row(i).node()).attr('style')
     database[row[0]] = new Workorder(row)
   }
   return database
