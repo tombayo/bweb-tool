@@ -20,6 +20,7 @@ function uiBooster() {
     $('<b>&nbsp;|</b>')
   );
   $('#navigation > div:last > ul > li:first').remove(); // Removes the vanilla search button, replaced with another one below.
+  $('#navigation > div:first > ul > li:last').remove(); // Removes the "Mangler Fakturanr" button.
   $('#header form')  // Moves the search-field and -button to be inline in the navbar
     .appendTo(
       $('<div>')
