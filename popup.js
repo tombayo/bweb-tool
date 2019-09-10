@@ -1,7 +1,7 @@
 function loadSettings() {
   chrome.storage.sync.get((settings) => { // Load the user's settings
     var stateSave = (settings.stateSave) ? 'true' : 'false'
-    var hiddenCols = (typeof(settings.hiddenCols) == 'undefined') ? [6,7] : settings.hiddenCols
+    var hiddenCols = (typeof(settings.hiddenCols) == 'undefined') ? [7,8] : settings.hiddenCols
     
     $('#statesave').val(stateSave)
     $('input[name=columns]').val(hiddenCols)
