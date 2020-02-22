@@ -1,0 +1,44 @@
+body, #header, th, #container, #navigation, #footer, #bweb_info {
+  background-color: #252525;
+  color: #ccc;
+}
+#bweb tr {
+  background-color: #252525;
+}
+#bweb td {
+  border-top: 1px solid rgb(221, 221, 221);
+}
+#bweb th {
+  border-bottom: 1px solid rgb(17, 17, 17);
+
+}
+.nav-item {
+  color: #0099ff;
+  background: #252525;
+}
+.nav-item.toggled {
+  background: #0099ff; 
+  color: #ccc;
+}
+input.nav-item {
+  background-image: linear-gradient(rgb(17, 17, 17) 1%, rgb(0, 0, 0) 15%);
+  color: ccc;
+}
+button.nav-item {
+  background: #252525;
+}
+button.nav-item:hover {
+  background: #0099ff; 
+  color: #ccc;
+}
+.good-txt {
+  color: #47a447;
+}
+.bad-txt {
+  color: #992d2d;
+}
+.chosen-choices, .chosen-drop, .chosen-results, .search-choice {
+  background-color: #000 !important;
+  background-image: none !important;
+  color: #ccc !important;
+}

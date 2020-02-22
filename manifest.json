@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Bweb-tool",
-  "version": "2.6.1",
+  "version": "2.7.0",
   "author": "Tom Andre Munkhaug",
   "description": "Denne utvidelsen gjør det enklere å bruke NTE Marked's Bestillingsweb ved å legge til ekstra funksjonalitet.",
   "icons": {
@@ -47,7 +47,7 @@
         "lib/DataTables-1.10.18/css/jquery.dataTables.min.css",
         "lib/Buttons-1.5.2/css/buttons.dataTables.min.css",
         "lib/Chosen/chosen.min.css",
-        "bweb-tools.css"
+        "bweb-tool.css"
       ]
     },
     {
@@ -77,8 +77,11 @@
         "bweb-tool.workorder.upload.js"
       ],
       "css": [
-        "bweb-tools.css"
+        "bweb-tool.css"
       ]
     }
+  ],
+  "web_accessible_resources": [
+    "bweb-tool-dark.css"
   ]
 }

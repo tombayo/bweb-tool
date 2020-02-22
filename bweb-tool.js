@@ -2,13 +2,15 @@
  * Main Script of the extension
  */
 
-
 /**
  * Applies various style and DOM improvements
+ * 
+ * @param {Object} settings 
  */
-function uiBooster() {
+function uiBooster(settings) {
   $('#content > h2').hide(); // Hides the standard heading
   $('#content > form').hide(); // Hides the horrible "filter" form
+  $('#header img').first().attr('src','https://nte.no/_/asset/no.smartlabs.nte:1581893708/dist/images/nte-logo.svg') // Replace logo for a transparent one
   $('#header span').first().hide(); // Removes the link "Hovedside", which is the same as the heading-link
   $('<div style="float:left"/>').append( // Creates a new Heading with link placed above navigation menu.
     $('<h2/>').css({marginBottom:'0px',marginTop:'1.5rem',display:'inline-block'}).append('<a href="/">Bestillingsweb</a>')
@@ -42,7 +44,7 @@ function uiBooster() {
       $('<span>').addClass('nav-item'),
       $('<button id="refresh-btn" type="button">Oppdater</button>').addClass('nav-item').on('click',function(){
         if (!$(this).prop('disabled')) { // check if button is disabled, to prevent double loading
-          backgroundRefresh();
+          backgroundRefresh(settings);
         }
       })
     )
@@ -63,6 +65,38 @@ function uiBooster() {
       });
     }
   });
+}
+
+/**
+ * Applies the Darkmode-theme
+ * @param {Object} settings 
+ */
+function applyDarkmode(settings) {
+  let enable = (typeof(settings.darkmode) == 'undefined') ? false : settings.darkmode
+  if (!enable) return null
+
+  let darkcss = chrome.extension.getURL('bweb-tool-dark.css')
+
+  if($(`link[href="${darkcss}"]`).length == 0) { // Check if stylesheet already is applied
+    $('head').append(`<link rel="stylesheet" type="text/css" href="${darkcss}">`)
+  }
+
+  $('#bweb tr[style^="background-color').each(function(){
+    switch (this.style.backgroundColor) {
+      case 'rgb(252, 255, 158)':
+        $(this).css({'backgroundColor':'#6e6f15'})
+        break
+      case 'rgb(170, 238, 255)':
+        $(this).css({'backgroundColor':'#155664'})
+        break
+      case 'rgb(250, 203, 142)':
+        $(this).css({'backgroundColor':'#724a17'})
+        break
+      case 'rgb(246, 246, 246)':
+      default:
+        $(this).css({'backgroundColor':'#252525'})
+    }
+  })
 }
 
 /**
@@ -133,9 +167,9 @@ function initDatatable(settings){
           col4.search( val ? '^'+val+'$' : '', true, false ).draw();
         });
 
-      dataUpdated(this.api()); // Data has been added to the table, this triggers more data-handling.
+      dataUpdated(this.api(), settings); // Data has been added to the table, this triggers more data-handling.
       datatableLoaded(); // Everything is now loaded, lets run this to add more functionality.
-      backgroundRefresh(); // Fires a refresh of the table in the background, this is to load the rest of the table.
+      backgroundRefresh(settings); // Fires a refresh of the table in the background, this is to load the rest of the table.
     }
   });
 }
@@ -203,9 +237,9 @@ function datatableLoaded() {
  * 
  * @param {DataTable} datatable datatable api
  */
-function dataUpdated(datatable) {
+function dataUpdated(datatable, settings) {
   var dt = datatable;
-  //refreshDatabase(dt); // Refresh the database with the current datatable content.
+  refreshDatabase(dt); // Refresh the database with the current datatable content.
   //refreshDatatableFromDB(dt); // Replace the table with data from the database.
   filterRefresh(dt); // Refresh the table's filters.
 
@@ -218,6 +252,14 @@ function dataUpdated(datatable) {
   })
   
   dt.draw();
+
+  applyDarkmode(settings)
+
+  var autorefresh = (typeof(settings.autorefresh) == 'undefined') ? true : settings.autorefresh
+  if (autorefresh) {
+    setTimeout(()=>backgroundRefresh(settings), 15*60*1000) // Refresh table after 15 mins
+  }
+
 }
 
 /**
@@ -226,13 +268,13 @@ function dataUpdated(datatable) {
  * @param {DataTable} datatable 
  */
 function refreshDatabase(datatable) {
-  var data = tableToDatabase(datatable)
-  var database = loadDatabase()
-  if (database) { // is database present?
-    saveDatabase(updateDatabase(database, data))
+  var db = new Database
+  if (db.load()) { // is database present?
+    db.update(datatable)
   } else {
-    saveDatabase(data)
+    db.fromTable(datatable)
   }
+  db.save()
 }
 
 /**
@@ -241,11 +283,11 @@ function refreshDatabase(datatable) {
  * @param {DataTable} datatable 
  */
 function refreshDatatableFromDB(datatable) {
-  var database = loadDatabase()
-  if (database) {
-    var data = databaseToTable(database)
+  var db = new Database
+  if (db.load()) {
+    var dataarray = db.toTable()
     datatable.clear()
-    datatable.rows.add(data)
+    datatable.rows.add(dataarray)
   }
 }
 
@@ -333,7 +375,7 @@ function ajaxRefresh(whensuccess) {
 /**
  * Loads the full table in background and refreshes the visible content.
  */
-function backgroundRefresh() {
+function backgroundRefresh(settings) {
   btnLoad('#refresh-btn', 'Oppdaterer');
   $('#refresh-feedback').html('Venter på server...').attr('title',''); // clears the feedback-area
   var tblLoad = tableLoading('#bweb');
@@ -356,7 +398,7 @@ function backgroundRefresh() {
         tbl.row.add(row);
       }
       //clearDatabase(); // Table contains the freshest data, lets clear the database to remove any old data.
-      dataUpdated(tbl); // Data is now updated, lets run this to trigger any additional work on the data.
+      dataUpdated(tbl, settings); // Data is now updated, lets run this to trigger any additional work on the data.
 
       $('#refresh-feedback').html(new Date().toLocaleString() + ' - Oppdatert!').removeClass('bad-txt').addClass('good-txt');
     }
@@ -437,11 +479,10 @@ function mapReverseLookup(objmap, search) {
  * Doc Ready!
  */
 $(function(){
-
-  uiBooster(); // Style and DOM mods
-  tableFix(); // Prepares the table
-
   chrome.storage.sync.get((settings) => { // Load the user's settings
+    tableFix(); // Prepares the table
+    uiBooster(settings); // Style and DOM mods
     initDatatable(settings); // Inits DataTable
+    applyDarkmode(settings); // Applies darkmode, if settings allows it
   });
 });

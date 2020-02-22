@@ -1,118 +1,157 @@
 /**
- * The object Workorder.
- * 
- * @param {*} data
+ * The class Workorder.
  */
-function Workorder(data) {
-  if (Array.isArray(data)) {
-    this.warning    = data[ 0]
-    this.id         = data[ 1]
-    this.localRef   = data[ 2]
-    this.orderDate  = data[ 3]
-    this.customer   = data[ 4]
-    this.location   = data[ 5]
-    this.address    = data[ 6]
-    this.shortdesc  = data[ 7]
-    this.contractor = data[ 8]
-    this.technician = data[ 9]
-    this.product    = data[10]
-    this.department = data[11]
-    this.handler    = data[12]
-    this.status     = data[13]
-    this.rowcolor   = data[14]
-  } else {
-    Object.assign(this, data)
-  }
-} 
-
-/**
- * Takes the table data and turns it into a database
- * 
- * @param {DataTable} datatable
- */
-function tableToDatabase(datatable) {
-  var data = $.extend(true,[],datatable.data().toArray())
-  var database = {}
-  for (let i=0;i<data.length;i++) {
-    let row = data[i]
-    row[0] = row[0].replace(/<[^>]+>/g, '');
-    row[14] = $(datatable.row(i).node()).attr('style')
-    database[row[0]] = new Workorder(row)
-  }
-  return database
-}
-
-/**
- * Takes the database data and turns it into table data that DataTable understands.
- * 
- * Use table.rows.add(dataarray).draw() to add and update the table.
- * 
- * @param {Array} db The database as generated in tableToDatabase
- */
-function databaseToTable(db) {
-  var dataarray = []
-  for (row in db) {
-    var rowcolor = (typeof(db[row].rowcolor) == 'undefined')?'':db[row].rowcolor
-    dataarray.push([
-      '<a data-rowcolor="'+rowcolor+'" href="/endre/'+db[row].id+'">'+db[row].id+'</a>',
-      db[row].localRef,
-      db[row].orderDate,
-      db[row].customer,
-      db[row].location,
-      db[row].address,
-      db[row].shortdesc,
-      db[row].contractor,
-      db[row].technician,
-      db[row].product,
-      db[row].department,
-      db[row].handler,
-      db[row].status
-    ])
-  }
-  return dataarray
-}
-
-function updateDatabase(database, newdata) {
-  if (newdata instanceof Workorder) { // Single entry
-    if (typeof(database[newdata.id]) === 'undefined') {
-      database[newdata.id] = newdata
-    } else {
-      database[newdata.id] = {...database[newdata.id], ...newdata}
+class Workorder {
+  /**
+   * Creates a new workorder with data from an array or object
+   * 
+   * Array data must match the structure of the #bweb-table
+   * 
+   * @param {Array|Object} data 
+   */
+  constructor(data, id) {
+    if (Array.isArray(data)) {
+      this.id         = id
+      this.warning    = data[0]
+      this.url        = data[1]
+      this.localRef   = data[2]
+      this.orderDate  = data[3]
+      this.customer   = data[4]
+      this.location   = data[5]
+      this.address    = data[6]
+      this.shortdesc  = data[7]
+      this.contractor = data[8]
+      this.technician = data[9]
+      this.product    = data[10]
+      this.department = data[11]
+      this.handler    = data[12]
+      this.status     = data[13]
+      this.rowcolor   = data[14]
     }
-  } else { // assume array/obj to iterate over
-    for (row in newdata) {
-      if (typeof(database[newdata[row].id]) === 'undefined') {
-        database[newdata[row].id] = newdata[row]
+    else {
+      Object.assign(this, data)
+    }
+  }
+}
+
+/**
+ * The Database class
+ */
+class Database {
+
+  /**
+   * Converts the database into table data that DataTable understands
+   * 
+   * Use table.rows.add(dataarray).draw() to add and update the table.
+   */
+  toTable() {
+    var dataarray = []
+    var db = this.data
+
+    for (i in db) {
+      var rowcolor = (typeof(db[i].rowcolor) == 'undefined')?'':db[i].rowcolor
+      dataarray.push([
+        db[i].warning,
+        `<a data-rowcolor="${rowcolor}" href="/endre/${db[i].id}">${db[i].id}</a>`,
+        db[i].localRef,
+        db[i].orderDate,
+        db[i].customer,
+        db[i].location,
+        db[i].address,
+        db[i].shortdesc,
+        db[i].contractor,
+        db[i].technician,
+        db[i].product,
+        db[i].department,
+        db[i].handler,
+        db[i].status
+      ])
+    }
+    return dataarray
+  }
+
+  /**
+   * Takes a DataTable and create a database
+   * 
+   * Will overwrite existing data
+   * 
+   * @param {DataTable} datatable 
+   */
+  fromTable(datatable) {
+    var dataarray = datatable.data().toArray()
+    this.data = {}
+    for (let row of dataarray) {
+      let id = row[1].replace(/<[^>]+>/g, '');
+      this.data[id] = new Workorder(row, id)
+    }
+    
+    return this
+  }
+
+  /**
+   * Updates the database with the supplied Workorder, Array of workorders, or DataTable array
+   * 
+   * @param {Workorder|Array|DataTable} data 
+   */
+  update(data) {
+    if (data instanceof Workorder) { // Single entry
+      if (typeof(this.data[data.id]) === 'undefined') {
+        this.data[data.id] = data
       } else {
-        database[newdata[row].id] = new Workorder({...database[newdata[row].id], ...newdata[row]}) // merge new data into old entry
+        this.data[data.id] = {...this.data[data.id], ...data}
+      }
+    } else { 
+      if (typeof(data.$) === 'function') { // DataTable 
+        var db = new Database
+        this.update(db.fromTable(data).data)
+      } else { // Array of Workorders
+        for (let i in data) {
+          let row = data[i]
+          if (typeof(this.data[row.id]) === 'undefined') {
+            this.data[row.id] = row
+          } else {
+            this.data[row.id] = new Workorder({...this.data[row.id], ...row}) // merge new data into old entry
+          }
+        }
+      }
+      
+    }
+
+    return this
+  }
+
+  /**
+   * Saves the database in localStorage
+   */
+  save() {
+    localStorage.setItem('bwebDB_v'+chrome.runtime.getManifest().version+'_'+window.location.pathname.replace(/[/]/gi, ''), JSON.stringify(this.data))
+
+    return this
+  }
+
+  /**
+   * Loads the database from localStorage
+   */
+  load() {
+    var data = JSON.parse(localStorage.getItem('bwebDB_v'+chrome.runtime.getManifest().version+'_'+window.location.pathname.replace(/[/]/gi, '')))
+    this.data = {}
+
+    if (data == null) {
+      return false
+    } else {
+      for (let i in data) {
+        let row = data[i]
+        this.data[row.id] = new Workorder(row)
       }
     }
+
+    return this
   }
-  return database
-}
 
-function saveDatabase(database) {
-  var toStorage = []
-  for (row in database) {
-    toStorage.push({...database[row]})
+  /**
+   * Deletes the database from localStorage
+   */
+  clear() {
+    localStorage.removeItem('bwebDB_v'+chrome.runtime.getManifest().version+'_'+window.location.pathname.replace(/[/]/gi, ''))
   }
-  localStorage.setItem('bwebDB_v'+chrome.runtime.getManifest().version+'_'+window.location.pathname.replace(/[/]/gi, ''), JSON.stringify(toStorage))
-}
-
-function loadDatabase() {
-  var data = JSON.parse(localStorage.getItem('bwebDB_v'+chrome.runtime.getManifest().version+'_'+window.location.pathname.replace(/[/]/gi, '')))
-  var database = {}
-
-  if (data == null) {
-    return false
-  } else {
-    for (row of data) {
-      database[row.id] = new Workorder(row)
-    }
-    return database
-  }
-}
-
-function clearDatabase() {
-  localStorage.removeItem('bwebDB_v'+chrome.runtime.getManifest().version+'_'+window.location.pathname.replace(/[/]/gi, ''))
 }
