@@ -38,7 +38,8 @@ class Workorder {
  * The Database class
  */
 class Database {
-
+  storageName = 'bwebDB_v'+chrome.runtime.getManifest().version+'_'+window.location.pathname.replace(/[/]/gi, '')
+  constructor() { return this }
   /**
    * Converts the database into table data that DataTable understands
    * 
@@ -48,7 +49,7 @@ class Database {
     var dataarray = []
     var db = this.data
 
-    for (i in db) {
+    for (let i in db) {
       var rowcolor = (typeof(db[i].rowcolor) == 'undefined')?'':db[i].rowcolor
       dataarray.push([
         db[i].warning,
@@ -124,7 +125,7 @@ class Database {
    * Saves the database in localStorage
    */
   save() {
-    localStorage.setItem('bwebDB_v'+chrome.runtime.getManifest().version+'_'+window.location.pathname.replace(/[/]/gi, ''), JSON.stringify(this.data))
+    localStorage.setItem(this.storageName, JSON.stringify(this.data))
 
     return this
   }
@@ -133,7 +134,7 @@ class Database {
    * Loads the database from localStorage
    */
   load() {
-    var data = JSON.parse(localStorage.getItem('bwebDB_v'+chrome.runtime.getManifest().version+'_'+window.location.pathname.replace(/[/]/gi, '')))
+    var data = JSON.parse(localStorage.getItem(this.storageName))
     this.data = {}
 
     if (data == null) {
@@ -152,6 +153,6 @@ class Database {
    * Deletes the database from localStorage
    */
   clear() {
-    localStorage.removeItem('bwebDB_v'+chrome.runtime.getManifest().version+'_'+window.location.pathname.replace(/[/]/gi, ''))
+    localStorage.removeItem(this.storageName)
   }
 }

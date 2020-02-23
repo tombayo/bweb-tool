@@ -130,3 +130,15 @@ span.nav-item {
 div#content {
   padding:0px;
 }
+#bweb tr.rowcolor-yellow {
+  background-color: #fcff9e;
+}
+#bweb tr.rowcolor-blue {
+  background-color: #aaeeff;
+}
+#bweb tr.rowcolor-orange {
+  background-color: #facb8e;
+}
+#bweb tr.rowcolor-header {
+  background-color: #f6f6f6;
+}

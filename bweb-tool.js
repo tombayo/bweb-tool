@@ -8,6 +8,8 @@
  * @param {Object} settings 
  */
 function uiBooster(settings) {
+  applyDarkmode(settings); // Applies darkmode, if settings allows it
+
   $('#content > h2').hide(); // Hides the standard heading
   $('#content > form').hide(); // Hides the horrible "filter" form
   $('#header img').first().attr('src','https://nte.no/_/asset/no.smartlabs.nte:1581893708/dist/images/nte-logo.svg') // Replace logo for a transparent one
@@ -80,22 +82,31 @@ function applyDarkmode(settings) {
   if($(`link[href="${darkcss}"]`).length == 0) { // Check if stylesheet already is applied
     $('head').append(`<link rel="stylesheet" type="text/css" href="${darkcss}">`)
   }
+}
 
-  $('#bweb tr[style^="background-color').each(function(){
-    switch (this.style.backgroundColor) {
-      case 'rgb(252, 255, 158)':
-        $(this).css({'backgroundColor':'#6e6f15'})
+function parseRowColors(dt) {
+  dt.rows('[style^="background-color"]').every(function(index){ // Every colored row
+    var color = ''
+    switch (this.node().style.backgroundColor) {
+      case 'rgb(252, 255, 158)': // #fcff9e
+        color = 'yellow'
         break
-      case 'rgb(170, 238, 255)':
-        $(this).css({'backgroundColor':'#155664'})
+      case 'rgb(170, 238, 255)': // #aaeeff
+        color = 'blue'
         break
-      case 'rgb(250, 203, 142)':
-        $(this).css({'backgroundColor':'#724a17'})
+      case 'rgb(250, 203, 142)': // #facb8e
+        color = 'orange'
         break
-      case 'rgb(246, 246, 246)':
+      case 'rgb(246, 246, 246)': // #f6f6f6
       default:
-        $(this).css({'backgroundColor':'#252525'})
+        color = 'header'
     }
+
+    this.node().style.backgroundColor = '' // remove stylized background color
+    this.node().classList.add('rowcolor-'+color) // Adds a class to color the row
+    var celldata = $(this.cell(index,0).data()).attr('data-rowcolor','rowcolor-'+color)[0].outerHTML
+    this.cell(index,0).data(celldata) // Updates the cells actual data, not just visuals.
+
   })
 }
 
@@ -166,8 +177,9 @@ function initDatatable(settings){
           }).join('$|^');
           col4.search( val ? '^'+val+'$' : '', true, false ).draw();
         });
-
-      dataUpdated(this.api(), settings); // Data has been added to the table, this triggers more data-handling.
+      
+      appendFromDB(this.api()) // While we wait for the background refresh, append DB-data to our table
+      dataUpdated(this.api()); // Data has been added to the table, this triggers more data-handling.
       datatableLoaded(); // Everything is now loaded, lets run this to add more functionality.
       backgroundRefresh(settings); // Fires a refresh of the table in the background, this is to load the rest of the table.
     }
@@ -224,9 +236,9 @@ function datatableLoaded() {
     var $btn = $(this);
     var dt = $('#bweb').DataTable();
     if ($btn.is('.toggled')) {
-      dt.rows(':not([style="background-color: #facb8e;"])').nodes().each(function(e){$(e).show()});
+      dt.rows(':not(.rowcolor-orange)').nodes().each(function(e){$(e).show()});
     } else {
-      dt.rows(':not([style="background-color: #facb8e;"])').nodes().each(function(e){$(e).hide()});
+      dt.rows(':not(.rowcolor-orange)').nodes().each(function(e){$(e).hide()});
     }
     $btn.toggleClass('toggled');
   });
@@ -237,29 +249,24 @@ function datatableLoaded() {
  * 
  * @param {DataTable} datatable datatable api
  */
-function dataUpdated(datatable, settings) {
-  var dt = datatable;
-  refreshDatabase(dt); // Refresh the database with the current datatable content.
-  //refreshDatatableFromDB(dt); // Replace the table with data from the database.
+function dataUpdated(dt) {
   filterRefresh(dt); // Refresh the table's filters.
 
-  $('#filter-unread > span').html(dt.rows('[style="background-color: #facb8e;"]').count());
-  $('[data-rowcolor][data-rowcolor!=""]').each(function(){
-    $(this).parents('tr').attr('style',$(this).data('rowcolor'))
-  })
   dt.rows().every(index=>{
     $(dt.row(index).node()).attr('title',dt.row(index).data()[7]) // Adds the short desc. as a title to the row
   })
-  
-  dt.draw();
 
-  applyDarkmode(settings)
+  parseRowColors(dt) // Parses the info from the different row-colors and stores them more systematically.
 
-  var autorefresh = (typeof(settings.autorefresh) == 'undefined') ? true : settings.autorefresh
-  if (autorefresh) {
-    setTimeout(()=>backgroundRefresh(settings), 15*60*1000) // Refresh table after 15 mins
-  }
+  dt.draw(); // Render the table
 
+  refreshDatabase(dt); // Refresh the database with the current datatable content.
+
+  $('thead > tr, tfoot > tr').attr('style','') // Remove the color from table footer and header
+  $('[data-rowcolor][data-rowcolor!=""]').each(function(){ // Finds cells with data-rowcolor
+    $(this).parents('tr').addClass($(this).data('rowcolor')) // Colors the row
+  })  
+  $('#filter-unread > span').html(dt.rows('.rowcolor-orange').count()); // Counts the orange rows and display in menu-button
 }
 
 /**
@@ -278,13 +285,16 @@ function refreshDatabase(datatable) {
 }
 
 /**
- * Updates the supplied datatable with data from the database
+ * Appends database data to the supplied datatable
+ * 
+ * Works as a temporary cache before fresh data is loaded from server.
  * 
  * @param {DataTable} datatable 
  */
-function refreshDatatableFromDB(datatable) {
-  var db = new Database
-  if (db.load()) {
+function appendFromDB(datatable) {
+  var db = new Database().load()
+  if (db) {
+    db.update(datatable) // Refresh the data before we clear it below
     var dataarray = db.toTable()
     datatable.clear()
     datatable.rows.add(dataarray)
@@ -397,8 +407,7 @@ function backgroundRefresh(settings) {
       for (row of rows) {
         tbl.row.add(row);
       }
-      //clearDatabase(); // Table contains the freshest data, lets clear the database to remove any old data.
-      dataUpdated(tbl, settings); // Data is now updated, lets run this to trigger any additional work on the data.
+      dataUpdated(tbl); // Data is now updated, lets run this to trigger any additional work on the data.
 
       $('#refresh-feedback').html(new Date().toLocaleString() + ' - Oppdatert!').removeClass('bad-txt').addClass('good-txt');
     }
@@ -406,6 +415,13 @@ function backgroundRefresh(settings) {
     btnReady('#refresh-btn', 'Oppdater &#8635;');
     tblLoad.remove();
   });
+
+  var autorefresh = (typeof(settings.autorefresh) == 'undefined') ? true : settings.autorefresh
+  if (autorefresh) {
+    setTimeout(()=>backgroundRefresh(settings), 5*60*1000) // Refresh table after 5 mins
+  }
+
+
 }
 
 /**
@@ -474,7 +490,6 @@ function mapReverseLookup(objmap, search) {
   });
 }
 
-
 /**
  * Doc Ready!
  */
@@ -483,6 +498,5 @@ $(function(){
     tableFix(); // Prepares the table
     uiBooster(settings); // Style and DOM mods
     initDatatable(settings); // Inits DataTable
-    applyDarkmode(settings); // Applies darkmode, if settings allows it
   });
 });
