@@ -84,6 +84,13 @@ function applyDarkmode(settings) {
   }
 }
 
+/**
+ * Parses the row-colors and saves them as a data-attribute in the first column
+ * 
+ * This allows us to retain the rowcolor-information in the database.
+ * 
+ * @param {DataTable} dt 
+ */
 function parseRowColors(dt) {
   dt.rows('[style^="background-color"]').every(function(index){ // Every colored row
     var color = ''
@@ -158,7 +165,24 @@ function initDatatable(settings){
       }
     ],
     initComplete: function () {
-      this.api().columns([2,4,6,8,9,10,11,12,13]).every( function () { // Prepares the column filters
+      var colarr = [2,4,6,8,9,10,11,12,13] // An array of all the columns to apply filter to
+      var applySpecial = (typeof(settings.applySpecial) == 'undefined') ? true : settings.applySpecial
+      
+      if (applySpecial) {
+        var col = this.api().column(5); // Custom filtering for column 5 (postal town/municipality)
+        $('<select data-placeholder="Kommune.." class="chosen-select" multiple><option value="">Alle</option></select>')
+          .appendTo( $(col.footer()).empty() )
+          .on('change', function() {
+            var val = $(this).val().map(function(muni){ // Converts municipalities to all towns within
+              return mapReverseLookup(poststed, muni).map(val => val[0]).join('$|^');
+            }).join('$|^');
+            col.search( val ? '^'+val+'$' : '', true, false ).draw();
+          });
+      } else {
+        colarr.push(5)
+      }
+
+      this.api().columns(colarr).every( function () { // Prepares the column filters
         var column = this;
         $('<select data-placeholder="Filter.." class="chosen-select" multiple><option value="">Alle</option></select>')
           .appendTo( $(column.footer()).empty() )
@@ -168,18 +192,8 @@ function initDatatable(settings){
           });
       });
       
-      var col4 = this.api().column(5); // Custom filtering for column 4 (postal town/municipality)
-      $('<select data-placeholder="Kommune.." class="chosen-select" multiple><option value="">Alle</option></select>')
-        .appendTo( $(col4.footer()).empty() )
-        .on('change', function() {
-          var val = $(this).val().map(function(muni){ // Converts municipalities to all towns within
-            return mapReverseLookup(poststed, muni).map(val => val[0]).join('$|^');
-          }).join('$|^');
-          col4.search( val ? '^'+val+'$' : '', true, false ).draw();
-        });
-      
       appendFromDB(this.api()) // While we wait for the background refresh, append DB-data to our table
-      dataUpdated(this.api()); // Data has been added to the table, this triggers more data-handling.
+      dataUpdated(this.api(), settings); // Data has been added to the table, this triggers more data-handling.
       datatableLoaded(); // Everything is now loaded, lets run this to add more functionality.
       backgroundRefresh(settings); // Fires a refresh of the table in the background, this is to load the rest of the table.
     }
@@ -249,8 +263,8 @@ function datatableLoaded() {
  * 
  * @param {DataTable} datatable datatable api
  */
-function dataUpdated(dt) {
-  filterRefresh(dt); // Refresh the table's filters.
+function dataUpdated(dt, settings) {
+  filterRefresh(dt, settings); // Refresh the table's filters.
 
   dt.rows().every(index=>{
     $(dt.row(index).node()).attr('title',dt.row(index).data()[7]) // Adds the short desc. as a title to the row
@@ -407,7 +421,7 @@ function backgroundRefresh(settings) {
       for (row of rows) {
         tbl.row.add(row);
       }
-      dataUpdated(tbl); // Data is now updated, lets run this to trigger any additional work on the data.
+      dataUpdated(tbl, settings); // Data is now updated, lets run this to trigger any additional work on the data.
 
       $('#refresh-feedback').html(new Date().toLocaleString() + ' - Oppdatert!').removeClass('bad-txt').addClass('good-txt');
     }
@@ -430,9 +444,21 @@ function backgroundRefresh(settings) {
  * @todo Use Datatable count() to update the numbers in nav.
  * 
  * @param {DataTable} datatable datatable api
+ * @param {Object} settings 
  */
-function filterRefresh(datatable) {
-  datatable.columns([2,4,6,8,9,10,11,12,13]).every( function () {
+function filterRefresh(datatable, settings) {
+  var colarr = [2,4,6,8,9,10,11,12,13] // An array of all the columns to apply filter to
+  var applySpecial = (typeof(settings.applySpecial) == 'undefined') ? true : settings.applySpecial
+
+  if(applySpecial) {
+    municipalityFilterRefresh(datatable, 5) // Refreshes our special municipality filter
+  } else {
+    if (!colarr.includes(5)) {
+      colarr.push(5)
+    }
+  }
+
+  datatable.columns(colarr).every( function () { 
     var column = this;
     var select = $(column.footer()).find('select').empty().append('<option value="">Alle</option>'); // Clears the select to re-add based on new column data
 
@@ -450,11 +476,20 @@ function filterRefresh(datatable) {
     select.trigger("chosen:updated"); // Content of select updated, lets notify chosen to redraw.
   });
 
-  var col4 = datatable.column(5);
-  var sel4 = $(col4.footer()).find('select').empty().append('<option value="">Alle</option>');
+}
+
+/**
+ * Applies the municipality filter to the desired column
+ * 
+ * @param {DataTables} dt 
+ * @param {Integer} column 
+ */
+function municipalityFilterRefresh(dt, column) {
+  var col = dt.column(column);
+  var sel = $(col.footer()).find('select').empty().append('<option value="">Alle</option>');
   var municipalities = [];
 
-  col4.data().unique().sort().each( function (d, j) { // Build the array of municipalities based the towns in column 4
+  col.data().unique().sort().each( function (d, j) { // Build the array of municipalities based the towns
     if (typeof(poststed[d]) === 'undefined') { // Place doesn't exist, usually a typo
        poststed[d] = 'ukjente'; // put all unknowns into a fake municipality
     }
@@ -462,7 +497,7 @@ function filterRefresh(datatable) {
       municipalities.push(poststed[d]);
     }
   });
-  var searchval = col4.search().replace(/[^\w\s/|ÆØÅæøå]/gi, '').split('|'); // Removes special chars in the search-string that is applied to column 4
+  var searchval = col.search().replace(/[^\w\s/|ÆØÅæøå]/gi, '').split('|'); // Removes special chars in the search-string that is applied to column
   for (muni of municipalities.sort()) {
     var places = mapReverseLookup(poststed, muni); // finds all towns for a municipality
     var inarr = false;
@@ -474,14 +509,13 @@ function filterRefresh(datatable) {
       }
     }
     if(inarr){ // if so put the municipality as selected.
-      sel4.append( '<option value="'+muni+'" selected="selected">'+muni+'</option>' )
+      sel.append( '<option value="'+muni+'" selected="selected">'+muni+'</option>' )
     } else {
-      sel4.append( '<option value="'+muni+'">'+muni+'</option>' )
+      sel.append( '<option value="'+muni+'">'+muni+'</option>' )
     }
   }
 
-  sel4.trigger("chosen:updated");
-
+  sel.trigger("chosen:updated");
 }
 
 function mapReverseLookup(objmap, search) {
