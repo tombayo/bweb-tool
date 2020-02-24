@@ -3,14 +3,16 @@ function loadSettings() {
     var stateSave = (typeof(settings.stateSave) == 'undefined') ? 'false' : settings.stateSave
     var darkmode = (typeof(settings.darkmode) == 'undefined') ? 'false' : settings.darkmode
     var autorefresh = (typeof(settings.autorefresh) == 'undefined') ? 'true' : settings.autorefresh
+    var autorefreshtime = (typeof(settings.autorefreshtime) == 'undefined') ? '10' : settings.autorefreshtime
     var applySpecial = (typeof(settings.applySpecial) == 'undefined') ? 'true' : settings.applySpecial
     var hiddenCols = (typeof(settings.hiddenCols) == 'undefined') ? [7,8] : settings.hiddenCols
     
     $('#statesave').val(stateSave.toString())
     $('#darkmode').val(darkmode.toString())
     $('#autorefresh').val(autorefresh.toString())
+    $('#autorefreshtime').val(autorefreshtime.toString())
     $('#applySpecial').val(applySpecial.toString())
-    $('input[name=columns]').val(hiddenCols)    
+    $('input[name=columns]').val(hiddenCols)
 
     if (darkmode) {
       applyDarkmode()
@@ -26,6 +28,7 @@ function saveSettings(e) {
   var stateSave = ($('#statesave').val() === 'true')
   var darkmode = ($('#darkmode').val() === 'true')
   var autorefresh = ($('#autorefresh').val() === 'true')
+  var autorefreshtime = $('#autorefreshtime').val()
   var applySpecial = ($('#applySpecial').val() === 'true')
 
   $('input[name=columns]:checked').each(function(){
@@ -37,9 +40,10 @@ function saveSettings(e) {
     stateSave: stateSave,
     darkmode: darkmode,
     autorefresh: autorefresh,
+    autorefreshtime: autorefreshtime,
     applySpecial: applySpecial
   },()=>{
-    console.log("Lagret:",hiddenCols,stateSave,darkmode,autorefresh,applySpecial)
+    console.log("Lagret:",hiddenCols,stateSave,darkmode,autorefresh,autorefreshtime,applySpecial)
     chrome.tabs.executeScript(null,{code:"settingsUpdated()"})
     window.close()
   })

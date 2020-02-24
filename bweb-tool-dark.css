@@ -22,7 +22,7 @@ body, #header, th, #container, #navigation, #footer, #bweb_info {
 }
 input.nav-item {
   background-image: linear-gradient(rgb(17, 17, 17) 1%, rgb(0, 0, 0) 15%);
-  color: ccc;
+  color: #ccc;
 }
 button.nav-item {
   background: #252525;

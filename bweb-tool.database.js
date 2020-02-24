@@ -38,8 +38,13 @@ class Workorder {
  * The Database class
  */
 class Database {
-  storageName = 'bwebDB_v'+chrome.runtime.getManifest().version+'_'+window.location.pathname.replace(/[/]/gi, '')
-  constructor() { return this }
+  constructor(dbname = 'bwebDB') {
+    this.storageName = `${dbname}_v${chrome.runtime.getManifest().version}_${window.location.pathname.replace(/[/]/gi,'')}`
+    this.name = dbname
+    this.created = new Date().toJSON()
+
+     return this
+  }
   /**
    * Converts the database into table data that DataTable understands
    * 
@@ -82,7 +87,7 @@ class Database {
     var dataarray = datatable.data().toArray()
     this.data = {}
     for (let row of dataarray) {
-      let id = row[1].replace(/<[^>]+>/g, '');
+      let id = row[1].replace(/<[^>]+>/g, ''); // Remove HTML tags
       this.data[id] = new Workorder(row, id)
     }
     
@@ -101,22 +106,25 @@ class Database {
       } else {
         this.data[data.id] = {...this.data[data.id], ...data}
       }
-    } else { 
-      if (typeof(data.$) === 'function') { // DataTable 
-        var db = new Database
-        this.update(db.fromTable(data).data)
-      } else { // Array of Workorders
-        for (let i in data) {
-          let row = data[i]
+    } else if (typeof(data.$) === 'function') { // DataTable  
+      var db = new Database
+      this.update(db.fromTable(data).data)
+    } else if (Array.isArray(data)) { // Array of Workorders
+      for (let i in data) {
+        let row = data[i]
+        if (typeof(row[id]) !== 'undefined') {
           if (typeof(this.data[row.id]) === 'undefined') {
             this.data[row.id] = row
           } else {
             this.data[row.id] = new Workorder({...this.data[row.id], ...row}) // merge new data into old entry
           }
+        } else {
+          throw new Error('Wrong data fed to update()')
         }
       }
-      
     }
+    this.data = Object.assign(this.data, this.overwrites) // Overwrites the newly refreshed data with custom data
+    this.updated = new Date().toJSON()
 
     return this
   }
@@ -125,7 +133,7 @@ class Database {
    * Saves the database in localStorage
    */
   save() {
-    localStorage.setItem(this.storageName, JSON.stringify(this.data))
+    localStorage.setItem(this.storageName, JSON.stringify(this))
 
     return this
   }
@@ -135,15 +143,11 @@ class Database {
    */
   load() {
     var data = JSON.parse(localStorage.getItem(this.storageName))
-    this.data = {}
 
     if (data == null) {
       return false
     } else {
-      for (let i in data) {
-        let row = data[i]
-        this.data[row.id] = new Workorder(row)
-      }
+      Object.assign(this, data)
     }
 
     return this

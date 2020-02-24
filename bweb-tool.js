@@ -431,8 +431,9 @@ function backgroundRefresh(settings) {
   });
 
   var autorefresh = (typeof(settings.autorefresh) == 'undefined') ? true : settings.autorefresh
+  var autorefreshtime = (typeof(settings.autorefreshtime) == 'undefined') ? '10' : settings.autorefreshtime
   if (autorefresh) {
-    setTimeout(()=>backgroundRefresh(settings), 5*60*1000) // Refresh table after 5 mins
+    setTimeout(()=>backgroundRefresh(settings), parseInt(autorefreshtime)*60*1000) // Refresh table after 5 mins
   }
 
 
