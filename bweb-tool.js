@@ -89,10 +89,10 @@ function tableFix() {
  */
 function rawHTMLfix(string) {
   return string
-    .toLowerCase()
+    .toLowerCase()/*
     .replace(/<!--|-->/g,'')
     .replace( '<th class="header">adresse</th>',
-              '<th class="header">adresse</th>\n<th class="header">beskrivelse</th>')
+              '<th class="header">adresse</th>\n<th class="header">beskrivelse</th>')*/
 }
 
 /**
@@ -108,12 +108,12 @@ function initDatatable(settings){
     "deferRender": true, // Should improve performance slightly
     "columnDefs": [ // Column number 6 is set to be invisible
       {
-          "targets": (typeof(settings.hiddenCols) == 'undefined') ? [7,8] : settings.hiddenCols,
+          "targets": (typeof(settings.hiddenCols) == 'undefined') ? [6] : settings.hiddenCols,
           "visible": false
       }
     ],
     initComplete: function () {
-      this.api().columns([2,4,6,8,9,10,11,12,13]).every( function () { // Prepares the column filters
+      this.api().columns([2,4,6,7,8,9,10,11,12]).every( function () { // Prepares the column filters
         var column = this;
         $('<select data-placeholder="Filter.." class="chosen-select" multiple><option value="">Alle</option></select>')
           .appendTo( $(column.footer()).empty() )
@@ -213,9 +213,9 @@ function dataUpdated(datatable) {
   $('[data-rowcolor][data-rowcolor!=""]').each(function(){
     $(this).parents('tr').attr('style',$(this).data('rowcolor'))
   })
-  dt.rows().every(index=>{
+  /*dt.rows().every(index=>{
     $(dt.row(index).node()).attr('title',dt.row(index).data()[7]) // Adds the short desc. as a title to the row
-  })
+  })*/
   
   dt.draw();
 }
@@ -374,7 +374,7 @@ function backgroundRefresh() {
  * @param {DataTable} datatable datatable api
  */
 function filterRefresh(datatable) {
-  datatable.columns([2,4,6,8,9,10,11,12,13]).every( function () {
+  datatable.columns([2,4,6,8,9,10,11,12]).every( function () {
     var column = this;
     var select = $(column.footer()).find('select').empty().append('<option value="">Alle</option>'); // Clears the select to re-add based on new column data
 
