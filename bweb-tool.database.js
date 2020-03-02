@@ -26,11 +26,26 @@ class Workorder {
       this.department = data[11]
       this.handler    = data[12]
       this.status     = data[13]
-      this.rowcolor   = data[14]
     }
     else {
       Object.assign(this, data)
     }
+  }
+
+  /**
+   * Updates the data within this object
+   * 
+   * @param {Object} data 
+   */
+  update(data) {
+    // Remove props we dont want to overwrite:
+    delete data.id // No need to overwrite id
+    delete data.url // Dont overwrite url as it contains frontend data
+    delete data.created // Preserve object creation date
+
+    Object.assign(this, data) // Merge this with new data, overwriting matching props
+
+    this.updated = new Date().toJSON()
   }
 }
 
@@ -55,10 +70,9 @@ class Database {
     var db = this.data
 
     for (let i in db) {
-      var rowcolor = (typeof(db[i].rowcolor) == 'undefined')?'':db[i].rowcolor
       dataarray.push([
         db[i].warning,
-        `<a data-rowcolor="${rowcolor}" href="/endre/${db[i].id}">${db[i].id}</a>`,
+        db[i].url,
         db[i].localRef,
         db[i].orderDate,
         db[i].customer,
@@ -116,7 +130,11 @@ class Database {
           if (typeof(this.data[row.id]) === 'undefined') { // Do this database already have this id?
             this.data[row.id] = new Workorder(row, row.id)
           } else {
-            this.data[row.id] = new Workorder({...this.data[row.id], ...row}) // merge new data into old entry
+            if (!(this.data[row.id] instanceof Workorder)) {
+              this.data[row.id] = new Workorder(this.data[row.id]) // Data in DB is in general object form, convert to Workorder
+            }
+
+            this.data[row.id].update(row) // update Workorder entry with new data
           }
         } else {
           console.log('Wrong data fed to update(), missing property "id" in row', data)

@@ -111,8 +111,8 @@ function parseRowColors(dt) {
 
     this.node().style.backgroundColor = '' // remove stylized background color
     this.node().classList.add('rowcolor-'+color) // Adds a class to color the row
-    var celldata = $(this.cell(index,0).data()).attr('data-rowcolor','rowcolor-'+color)[0].outerHTML
-    this.cell(index,0).data(celldata) // Updates the cells actual data, not just visuals.
+    var celldata = $(this.cell(index,1).node().firstChild).attr('data-rowcolor','rowcolor-'+color)[0].outerHTML
+    this.cell(index,1).data(celldata) // Updates the cells actual data, not just visuals.
 
   })
 }
@@ -233,6 +233,8 @@ function datatableLoaded() {
     filterStatus(window.location.hash.replace(/[#]/, ''));
   }
 
+  tableLoading('#bweb').hide() // Adds the loadingbar to the table, then hides it
+
   // Moves the filter search field to the navbar
   $('#bweb_filter')
     .appendTo('#navigation')
@@ -346,9 +348,7 @@ function tableLoading(tableid) {
     letterSpacing:'20px',
     textAlign:'center'
   });
-  for (var i=0;i<10;i++) {
-    $('<span>&bull;</span>').appendTo(row);
-  }
+  $('<span>&bull;</span>'.repeat(10)).appendTo(row);
 
   var newhead = $('<thead>')
     .addClass('loading-slow')
@@ -403,7 +403,7 @@ function ajaxRefresh(whensuccess) {
 function backgroundRefresh(settings) {
   btnLoad('#refresh-btn', 'Oppdaterer');
   $('#refresh-feedback').html('Venter på server...').attr('title',''); // clears the feedback-area
-  var tblLoad = tableLoading('#bweb');
+  $('.loading-slow').show()
   ajaxRefresh(function(data, status){
     var html = $($.parseHTML(rawHTMLfix(data))).find('#oversikt tbody');
 
@@ -428,7 +428,7 @@ function backgroundRefresh(settings) {
     }
     $('#refresh-feedback').attr('title',$('#refresh-feedback').html());
     btnReady('#refresh-btn', 'Oppdater &#8635;');
-    tblLoad.remove();
+    $('.loading-slow').hide()
   });
 
   var autorefresh = (typeof(settings.autorefresh) == 'undefined') ? true : settings.autorefresh
