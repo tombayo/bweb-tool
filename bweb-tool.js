@@ -142,7 +142,8 @@ function tableFix() {
 function rawHTMLfix(string) {
   return string
     .toLowerCase()
-    .replace(/<!--|-->/g,'')
+    .replace(/<!--<td>/g,'<td>')
+    .replace(/<\/td>-->/g, '</td>')
     .replace( '<th class="header">adresse</th>',
               '<th class="header">adresse</th>\n<th class="header">beskrivelse</th>')
 }
@@ -289,7 +290,7 @@ function dataUpdated(dt, settings) {
  * @param {DataTable} datatable 
  */
 function refreshDatabase(datatable) {
-  var db = new Database
+  var db = new Database()
   if (db.load()) { // is database present?
     db.update(datatable)
   } else {
@@ -306,8 +307,8 @@ function refreshDatabase(datatable) {
  * @param {DataTable} datatable 
  */
 function appendFromDB(datatable) {
-  var db = new Database().load()
-  if (db) {
+  var db = new Database()
+  if (db.load()) { // is database present?
     db.update(datatable) // Refresh the data before we clear it below
     var dataarray = db.toTable()
     datatable.clear()

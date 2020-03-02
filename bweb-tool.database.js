@@ -95,9 +95,9 @@ class Database {
   }
 
   /**
-   * Updates the database with the supplied Workorder, Array of workorders, or DataTable array
+   * Updates the database with the supplied Workorder, Database, or DataTable array
    * 
-   * @param {Workorder|Array|DataTable} data 
+   * @param {Workorder|Database|DataTable} data 
    */
   update(data) {
     if (data instanceof Workorder) { // Single entry
@@ -108,22 +108,28 @@ class Database {
       }
     } else if (typeof(data.$) === 'function') { // DataTable  
       var db = new Database
-      this.update(db.fromTable(data).data)
-    } else if (Array.isArray(data)) { // Array of Workorders
-      for (let i in data) {
-        let row = data[i]
-        if (typeof(row[id]) !== 'undefined') {
-          if (typeof(this.data[row.id]) === 'undefined') {
-            this.data[row.id] = row
+      this.update(db.fromTable(data))
+    } else if (data instanceof Database) { // Another Database 
+      for (let i in data.data) {
+        let row = data.data[i]
+        if (typeof(row.id) !== 'undefined') { // The row should contain the property .id 
+          if (typeof(this.data[row.id]) === 'undefined') { // Do this database already have this id?
+            this.data[row.id] = new Workorder(row, row.id)
           } else {
             this.data[row.id] = new Workorder({...this.data[row.id], ...row}) // merge new data into old entry
           }
         } else {
-          throw new Error('Wrong data fed to update()')
+          console.log('Wrong data fed to update(), missing property "id" in row', data)
         }
       }
+    } else {
+      console.log('Wrong data fed to update(), unknown type', data)
     }
-    this.data = Object.assign(this.data, this.overwrites) // Overwrites the newly refreshed data with custom data
+
+    if (typeof(this.overwrites) !== 'undefined') {
+      this.data = Object.assign(this.data, this.overwrites) // Overwrites the newly refreshed data with custom data
+    }
+
     this.updated = new Date().toJSON()
 
     return this
