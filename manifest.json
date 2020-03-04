@@ -33,13 +33,13 @@
       "run_at": "document_start",
       "js": [
         "lib/jQuery-3.4.1/jquery-3.4.1.min.js",
+        "bweb-tool.darkmode.js",
         "lib/DataTables-1.10.20/js/jquery.dataTables.min.js",
         "lib/Chosen-1.8.7/chosen.jquery.min.js",
         "lib/Moment-2.24.0/moment.min.js",
         "lib/DataTables-1.10.20/plugins/datetime-moment.js",
         "bweb-tool.database.js",
         "bweb-tool.js",
-        "bweb-tool.darkmode.js",
         "poststed-til-kommune.js"        
       ],
       "css": [

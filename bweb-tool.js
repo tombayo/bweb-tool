@@ -7,7 +7,7 @@
  * 
  * @param {Object} settings 
  */
-function uiBooster(settings) {
+function uiBooster() {
   $('#content > h2').hide(); // Hides the standard heading
   $('#content > form').hide(); // Hides the horrible "filter" form
   //$('#header img').first().attr('src','https://nte.no/_/asset/no.smartlabs.nte:1581893708/dist/images/nte-logo.svg') // Replace logo for a transparent one
@@ -44,7 +44,7 @@ function uiBooster(settings) {
       $('<span>').addClass('nav-item'),
       $('<button id="refresh-btn" type="button">Oppdater</button>').addClass('nav-item').on('click',function(){
         if (!$(this).prop('disabled')) { // check if button is disabled, to prevent double loading
-          backgroundRefresh(settings);
+          backgroundRefresh();
         }
       })
     )
@@ -127,60 +127,32 @@ function rawHTMLfix(string) {
     .toLowerCase()
     .replace(/<!--<td>/g,'<td>')
     .replace(/<\/td>-->/g, '</td>')
-    .replace( '<th class="header">adresse</th>',
-              '<th class="header">adresse</th>\n<th class="header">beskrivelse</th>')
+    .replace( '<th>adresse</th>',
+              '<th>adresse</th>\n<th>beskrivelse</th>')
 }
 
 /**
  * Sets up DataTable on #bweb
  */
 function initDatatable(settings){
-  $.fn.dataTable.moment('DD.MM.YYYY HH:mm'); // Prepare Moment.js for sorting datetime
-  $('#bweb').DataTable({
-    "stateSave": (typeof(settings.stateSave) == 'undefined') ? false : settings.stateSave, // Enables the state of the filters and sortings to be saved for the next session
-    "language": {"url":"//cdn.datatables.net/plug-ins/1.10.20/i18n/Norwegian-Bokmal.json"}, // Adds l10n
-    "order": [[ 1, "desc" ]], // Selects the initial ordering of the table
-    "paging": false, // Defines if paging should be enabled
-    "columnDefs": [ // Column number 6 is set to be invisible
-      {
-          "targets": (typeof(settings.hiddenCols) == 'undefined') ? [7,8] : settings.hiddenCols,
-          "visible": false
+  return new Promise((resolve,reject) => {
+    $.fn.dataTable.moment('DD.MM.YYYY HH:mm'); // Prepare Moment.js for sorting datetime
+    $('#bweb').DataTable({
+      "stateSave": (typeof(settings.stateSave) == 'undefined') ? false : settings.stateSave, // Enables the state of the filters and sortings to be saved for the next session
+      "language": {"url":"//cdn.datatables.net/plug-ins/1.10.20/i18n/Norwegian-Bokmal.json"}, // Adds l10n
+      "order": [[ 1, "desc" ]], // Selects the initial ordering of the table
+      "paging": false, // Defines if paging should be enabled
+      "columnDefs": [ // Column number 6 is set to be invisible
+        {
+            "targets": (typeof(settings.hiddenCols) == 'undefined') ? [7,8] : settings.hiddenCols,
+            "visible": false
+        }
+      ],
+      initComplete: function(){
+        resolve(this.api())
       }
-    ],
-    initComplete: function () {
-      var colarr = [9,10,11,12,13] // An array of all the columns to apply filter to
-      var applySpecial = (typeof(settings.applySpecial) == 'undefined') ? true : settings.applySpecial
-      
-      if (applySpecial) {
-        var col = this.api().column(5); // Custom filtering for column 5 (postal town/municipality)
-        $('<select data-placeholder="Kommune.." class="chosen-select" multiple><option value="">Alle</option></select>')
-          .appendTo( $(col.footer()).empty() )
-          .on('change', function() {
-            var val = $(this).val().map(function(muni){ // Converts municipalities to all towns within
-              return mapReverseLookup(poststed, muni).map(val => val[0]).join('$|^');
-            }).join('$|^');
-            col.search( val ? '^'+val+'$' : '', true, false ).draw();
-          });
-      } else {
-        colarr.push(5)
-      }
-
-      this.api().columns(colarr).every( function () { // Prepares the column filters
-        var column = this;
-        $('<select data-placeholder="Filter.." class="chosen-select" multiple><option value="">Alle</option></select>')
-          .appendTo( $(column.footer()).empty() )
-          .on( 'change', function () {
-            var val = $(this).val().join('|');
-            column.search( val ? '^'+val+'$' : '', true, false ).draw();
-          });
-      });
-      
-      appendFromDB(this.api()) // While we wait for the background refresh, append DB-data to our table
-      dataUpdated(this.api(), settings); // Data has been added to the table, this triggers more data-handling.
-      datatableLoaded(); // Everything is now loaded, lets run this to add more functionality.
-      backgroundRefresh(settings); // Fires a refresh of the table in the background, this is to load the rest of the table.
-    }
-  });
+    })
+  })
 }
 
 /**
@@ -248,7 +220,7 @@ function datatableLoaded() {
  * 
  * @param {DataTable} datatable datatable api
  */
-function dataUpdated(dt, settings) {
+function dataUpdated(settings, dt) {
   filterRefresh(dt, settings); // Refresh the table's filters.
 
   dt.rows().every(index=>{
@@ -290,7 +262,7 @@ function refreshDatabase(datatable) {
  * 
  * @param {DataTable} datatable 
  */
-function appendFromDB(datatable) {
+function appendFromDB(settings, datatable) {
   var db = new Database()
   if (db.load()) { // is database present?
     db.update(datatable) // Refresh the data before we clear it below
@@ -404,7 +376,7 @@ function backgroundRefresh(settings) {
       for (row of rows) {
         tbl.row.add(row);
       }
-      dataUpdated(tbl, settings); // Data is now updated, lets run this to trigger any additional work on the data.
+      dataUpdated(settings, tbl); // Data is now updated, lets run this to trigger any additional work on the data.
 
       $('#refresh-feedback').html(new Date().toLocaleString() + ' - Oppdatert!').removeClass('bad-txt').addClass('good-txt');
     }
@@ -508,15 +480,60 @@ function mapReverseLookup(objmap, search) {
   });
 }
 
+function loadSettings() {
+  return new Promise((resolve,reject) => {
+    chrome.storage.sync.get((response) => {
+      resolve(response)
+    })
+  })
+}
+
+function datatableInitialized(settings,dt) {
+  var colarr = [9,10,11,12,13] // An array of all the columns to apply filter to
+  var applySpecial = (typeof(settings.applySpecial) == 'undefined') ? true : settings.applySpecial
+  
+  if (applySpecial) {
+    var col = dt.column(5); // Custom filtering for column 5 (postal town/municipality)
+    $('<select data-placeholder="Kommune.." class="chosen-select" multiple><option value="">Alle</option></select>')
+      .appendTo( $(col.footer()).empty() )
+      .on('change', function() {
+        var val = $(this).val().map(function(muni){ // Converts municipalities to all towns within
+          return mapReverseLookup(poststed, muni).map(val => val[0]).join('$|^');
+        }).join('$|^');
+        col.search( val ? '^'+val+'$' : '', true, false ).draw();
+      });
+  } else {
+    colarr.push(5)
+  }
+
+  dt.columns(colarr).every( function () { // Prepares the column filters
+    var column = this;
+    $('<select data-placeholder="Filter.." class="chosen-select" multiple><option value="">Alle</option></select>')
+      .appendTo( $(column.footer()).empty() )
+      .on( 'change', function () {
+        var val = $(this).val().join('|');
+        column.search( val ? '^'+val+'$' : '', true, false ).draw();
+      });
+  });
+}
+
 /**
  * Doc Ready!
  */
-$(function(){
-  applyDarkmode(); // Applies darkmode, if settings allow it
-  tableFix(); // Prepares the table
+var DOMready = (f)=>(document.readyState === 'complete')?f():document.addEventListener('DOMContentLoaded',f,false)
+DOMready(()=>{
+  tableFix() // Prepares the table
+  uiBooster() // Style and DOM mods
 
-  chrome.storage.sync.get((settings) => { // Load the user's settings
-    uiBooster(settings); // Style and DOM mods
-    initDatatable(settings); // Inits DataTable
-  });
-});
+  const settings = loadSettings() // Loads settings from localstore
+  const dt       = initDatatable(settings) // Inits DataTable
+
+  Promise.all([settings, dt]).then((vals) => {
+    datatableInitialized(...vals) // Runs when DataTable is finished loading
+    appendFromDB(...vals) // While we wait for the background refresh, append DB-data to our table
+    dataUpdated(...vals) // Data has been added to the table, this triggers more data-handling.
+    datatableLoaded(...vals) // Everything is now loaded, lets run this to add more functionality.
+    backgroundRefresh(...vals); // Fires a refresh of the table in the background, this is to load the rest of the table.
+  })
+
+})

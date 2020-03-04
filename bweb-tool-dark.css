@@ -1,4 +1,4 @@
-body, #header,#container, #navigation, #footer, #bweb_info, table, tr, td, textarea, input {
+body, #header,#container, #navigation, #footer, #bweb_info, table, textarea, input, select {
   background-color: #252525 !important;
   color: #ccc !important;
 }
@@ -40,6 +40,9 @@ button.nav-item:hover {
   background-color: #000 !important;
   background-image: none !important;
   color: #ccc !important;
+}
+#bweb tr {
+  background-color: #252525;
 }
 #bweb tr.rowcolor-yellow {
   background-color: #6e6f15;

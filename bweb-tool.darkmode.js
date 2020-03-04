@@ -1,5 +1,5 @@
 /**
- * Applies the Darkmode-theme
+ * Applies the Darkmode-theme according to the settings
  * @param {Object} settings 
  */
 function applyDarkmode() {
@@ -14,3 +14,5 @@ function applyDarkmode() {
     }
   });
 }
+
+applyDarkmode()

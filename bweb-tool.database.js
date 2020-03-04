@@ -49,7 +49,6 @@ class Workorder {
   update(data) {
     // Remove props we dont want to overwrite:
     delete data.id // No need to overwrite id
-    delete data.url // Dont overwrite url as it contains frontend data
     delete data.created // Preserve object creation date
 
     Object.assign(this, data) // Merge this with new data, overwriting matching props
