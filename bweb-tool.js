@@ -155,10 +155,9 @@ function initDatatable(settings){
   $.fn.dataTable.moment('DD.MM.YYYY HH:mm'); // Prepare Moment.js for sorting datetime
   $('#bweb').DataTable({
     "stateSave": (typeof(settings.stateSave) == 'undefined') ? false : settings.stateSave, // Enables the state of the filters and sortings to be saved for the next session
-    "language": {"url":"//cdn.datatables.net/plug-ins/1.10.16/i18n/Norwegian-Bokmal.json"}, // Adds l10n
+    "language": {"url":"//cdn.datatables.net/plug-ins/1.10.20/i18n/Norwegian-Bokmal.json"}, // Adds l10n
     "order": [[ 1, "desc" ]], // Selects the initial ordering of the table
     "paging": false, // Defines if paging should be enabled
-    "deferRender": true, // Should improve performance slightly
     "columnDefs": [ // Column number 6 is set to be invisible
       {
           "targets": (typeof(settings.hiddenCols) == 'undefined') ? [7,8] : settings.hiddenCols,

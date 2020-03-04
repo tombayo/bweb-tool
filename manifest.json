@@ -30,23 +30,20 @@
         "https://bweb2.nteb.no/mottatt/",
         "https://bweb2.nteb.no/arkivert/"
       ],
+      "run_at": "document_start",
       "js": [
-        "lib/jQuery-3.3.1/jquery-3.3.1.min.js",
-        "lib/JSZip-2.5.0/jszip.min.js",
-        "lib/DataTables-1.10.18/js/jquery.dataTables.min.js",
-        "lib/Buttons-1.5.2/js/dataTables.buttons.min.js",
-        "lib/Buttons-1.5.2/js/buttons.html5.min.js",
-        "lib/Chosen/chosen.jquery.min.js",
-        "lib/Moment/moment.js",
-        "lib/DataTables-1.10.18/plugins/datetime-moment.js",
+        "lib/jQuery-3.4.1/jquery-3.4.1.min.js",
+        "lib/DataTables-1.10.20/js/jquery.dataTables.min.js",
+        "lib/Chosen-1.8.7/chosen.jquery.min.js",
+        "lib/Moment-2.24.0/moment.min.js",
+        "lib/DataTables-1.10.20/plugins/datetime-moment.js",
         "bweb-tool.database.js",
         "bweb-tool.js",
         "poststed-til-kommune.js"        
       ],
       "css": [
-        "lib/DataTables-1.10.18/css/jquery.dataTables.min.css",
-        "lib/Buttons-1.5.2/css/buttons.dataTables.min.css",
-        "lib/Chosen/chosen.min.css",
+        "lib/DataTables-1.10.20/css/jquery.dataTables.min.css",
+        "lib/Chosen-1.8.7/chosen.min.css",
         "bweb-tool.css"
       ]
     },
@@ -55,7 +52,7 @@
         "https://bweb2.nteb.no/endre/*"
       ],
       "js": [
-        "lib/jQuery-3.3.1/jquery-3.3.1.min.js",
+        "lib/jQuery-3.4.1/jquery-3.4.1.min.js",
         "bweb-tool.workorder.js"
       ]
     },
@@ -64,7 +61,7 @@
         "https://bweb2.nteb.no/kommentar/*"  
       ],
       "js": [
-        "lib/jQuery-3.3.1/jquery-3.3.1.min.js",
+        "lib/jQuery-3.4.1/jquery-3.4.1.min.js",
         "bweb-tool.workorder.comment.js"
       ]
     },
@@ -73,7 +70,7 @@
         "https://bweb2.nteb.no/upload/*"
       ],
       "js": [
-        "lib/jQuery-3.3.1/jquery-3.3.1.min.js",
+        "lib/jQuery-3.4.1/jquery-3.4.1.min.js",
         "bweb-tool.workorder.upload.js"
       ],
       "css": [
