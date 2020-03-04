@@ -21,6 +21,7 @@ function getTlf() {
 
 
 $(function(){
+  applyDarkmode()
   addentrepID()
   $("input[name='sms']").click(()=> {
     $("#id_telefon").val(getTlf())
