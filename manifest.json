@@ -39,6 +39,7 @@
         "lib/DataTables-1.10.20/plugins/datetime-moment.js",
         "bweb-tool.database.js",
         "bweb-tool.js",
+        "bweb-tool.darkmode.js",
         "poststed-til-kommune.js"        
       ],
       "css": [
@@ -53,7 +54,8 @@
       ],
       "js": [
         "lib/jQuery-3.4.1/jquery-3.4.1.min.js",
-        "bweb-tool.workorder.js"
+        "bweb-tool.workorder.js",
+        "bweb-tool.darkmode.js"
       ]
     },
     {
@@ -62,7 +64,8 @@
       ],
       "js": [
         "lib/jQuery-3.4.1/jquery-3.4.1.min.js",
-        "bweb-tool.workorder.comment.js"
+        "bweb-tool.workorder.comment.js",
+        "bweb-tool.darkmode.js"
       ]
     },
     {
@@ -71,7 +74,8 @@
       ],
       "js": [
         "lib/jQuery-3.4.1/jquery-3.4.1.min.js",
-        "bweb-tool.workorder.upload.js"
+        "bweb-tool.workorder.upload.js",
+        "bweb-tool.darkmode.js"
       ],
       "css": [
         "bweb-tool.css"

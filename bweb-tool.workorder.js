@@ -114,6 +114,7 @@ function uiImprovements() {
 }
 
 $(function(){
+  applyDarkmode();
   addAddressUrl();
   addCustomerIdUrl();
   uiImprovements();

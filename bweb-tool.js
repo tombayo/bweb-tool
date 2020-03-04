@@ -8,11 +8,9 @@
  * @param {Object} settings 
  */
 function uiBooster(settings) {
-  applyDarkmode(settings); // Applies darkmode, if settings allows it
-
   $('#content > h2').hide(); // Hides the standard heading
   $('#content > form').hide(); // Hides the horrible "filter" form
-  $('#header img').first().attr('src','https://nte.no/_/asset/no.smartlabs.nte:1581893708/dist/images/nte-logo.svg') // Replace logo for a transparent one
+  //$('#header img').first().attr('src','https://nte.no/_/asset/no.smartlabs.nte:1581893708/dist/images/nte-logo.svg') // Replace logo for a transparent one
   $('#header span').first().hide(); // Removes the link "Hovedside", which is the same as the heading-link
   $('<div style="float:left"/>').append( // Creates a new Heading with link placed above navigation menu.
     $('<h2/>').css({marginBottom:'0px',marginTop:'1.5rem',display:'inline-block'}).append('<a href="/">Bestillingsweb</a>')
@@ -67,21 +65,6 @@ function uiBooster(settings) {
       });
     }
   });
-}
-
-/**
- * Applies the Darkmode-theme
- * @param {Object} settings 
- */
-function applyDarkmode(settings) {
-  let enable = (typeof(settings.darkmode) == 'undefined') ? false : settings.darkmode
-  if (!enable) return null
-
-  let darkcss = chrome.extension.getURL('bweb-tool-dark.css')
-
-  if($(`link[href="${darkcss}"]`).length == 0) { // Check if stylesheet already is applied
-    $('head').append(`<link rel="stylesheet" type="text/css" href="${darkcss}">`)
-  }
 }
 
 /**
@@ -165,7 +148,7 @@ function initDatatable(settings){
       }
     ],
     initComplete: function () {
-      var colarr = [2,4,6,8,9,10,11,12,13] // An array of all the columns to apply filter to
+      var colarr = [9,10,11,12,13] // An array of all the columns to apply filter to
       var applySpecial = (typeof(settings.applySpecial) == 'undefined') ? true : settings.applySpecial
       
       if (applySpecial) {
@@ -448,7 +431,7 @@ function backgroundRefresh(settings) {
  * @param {Object} settings 
  */
 function filterRefresh(datatable, settings) {
-  var colarr = [2,4,6,8,9,10,11,12,13] // An array of all the columns to apply filter to
+  var colarr = [9,10,11,12,13] // An array of all the columns to apply filter to
   var applySpecial = (typeof(settings.applySpecial) == 'undefined') ? true : settings.applySpecial
 
   if(applySpecial) {
@@ -529,8 +512,10 @@ function mapReverseLookup(objmap, search) {
  * Doc Ready!
  */
 $(function(){
+  applyDarkmode(); // Applies darkmode, if settings allow it
+  tableFix(); // Prepares the table
+
   chrome.storage.sync.get((settings) => { // Load the user's settings
-    tableFix(); // Prepares the table
     uiBooster(settings); // Style and DOM mods
     initDatatable(settings); // Inits DataTable
   });
