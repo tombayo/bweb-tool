@@ -7,30 +7,19 @@ class Workorder {
    * 
    * Array data must match the structure of the #bweb-table
    * 
-   * @param {Array|Object} data 
-   * @param {Integer} id
+   * @param {Array|Object} data object data or array
+   * @param {Integer} id ID of array data
+   * @param {Array} columns columns of array data
    */
-  constructor(data, id) {
+  constructor(columns,data,id) {
+    this.columns    = columns
     if (Array.isArray(data)) {
       this.id         = id
       this.created    = new Date().toJSON()
-      if (data.length === 14) {
-        this.warning    = data[0]
-        this.url        = data[1]
-        this.localRef   = data[2]
-        this.orderDate  = data[3]
-        this.customer   = data[4]
-        this.location   = data[5]
-        this.address    = data[6]
-        this.shortdesc  = data[7]
-        this.contractor = data[8]
-        this.technician = data[9]
-        this.product    = data[10]
-        this.department = data[11]
-        this.handler    = data[12]
-        this.status     = data[13]
+      if (data.length === columns.length) {
+        Object.assign(this, ...columns.map((k,i) => ({[k]: data[i]})))
       } else {
-        console.log('Couldn\'t create Workorder, invalid data length', data)
+        console.log('Couldn\'t create Workorder, invalid data/columns length', data, columns)
       }
     } else {
       if (parseInt(data.id) !== NaN) {
@@ -60,22 +49,7 @@ class Workorder {
    * Converts the data to an array.
    */
   toArray() {
-    return [
-      this.warning,
-      this.url,
-      this.localRef,
-      this.orderDate,
-      this.customer,
-      this.location,
-      this.address,
-      this.shortdesc,
-      this.contractor,
-      this.technician,
-      this.product,
-      this.department,
-      this.handler,
-      this.status
-    ]
+    return this.columns.map((k) => this[k])
   }
 }
 
@@ -83,11 +57,28 @@ class Workorder {
  * The Database class
  */
 class Database {
-  constructor(dbname = 'bwebDB') {
-    this.storageName = `${dbname}_v${chrome.runtime.getManifest().version}_${window.location.pathname.replace(/[/]/gi,'')}`
-    this.name        = dbname
-    this.created     = new Date().toJSON()
-    this.data        = {}
+  constructor(dbname  = 'bwebDB') {
+    this.storageName  = `${dbname}_v${chrome.runtime.getManifest().version}_${window.location.pathname.replace(/[/]/gi,'')}`
+    this.name         = dbname
+    this.created      = new Date().toJSON()
+    this.data         = {}
+    this.columns      = [
+      { data: 'warning', ui: 'Varsel' },
+      { data: 'url', ui: 'NTE ref' },
+      { data: 'localRef', ui: 'Ekstern ref' },
+      { data: 'orderDate', ui: 'Reg. dato' },
+      { data: 'customer', ui: 'Kunde' },
+      { data: 'location', ui: 'Poststed' },
+      { data: 'address', ui: 'Adresse' },
+      { data: 'shortdesc', ui: 'Beskrivelse' },
+      { data: 'contractor', ui: 'Entreprenør' },
+      { data: 'technician', ui: 'Montør' },
+      { data: 'product', ui: 'Produkt' },
+      { data: 'department', ui: 'Kategori' },
+      { data: 'handler', ui: 'Bestilt av' },
+      { data: 'status', ui: 'Status' }
+    ]
+    this.tableColumns = this.columns.map((col)=>col.data)
 
      return this
   }
@@ -96,7 +87,7 @@ class Database {
    * 
    * Use DataTable.rows.add(dataarray).draw() to add and update the table.
    */
-  toTable() {
+  toArray() {
     var dataarray = []
     var db = this.data
 
@@ -107,15 +98,15 @@ class Database {
   }
 
   /**
-   * Takes a DataTable and updates the database with the data
+   * Takes an array of rows, each row containing an array of cols and updates the database.
+   * Usualy data from table
    * 
-   * @param {DataTable} datatable 
+   * @param {Array} dataarray
    */
-  fromTable(datatable) {
-    var dataarray = datatable.data().toArray()
+  fromArray(dataarray) {
     for (let row of dataarray) {
       let id = row[1].replace(/<[^>]+>/g, ''); // Remove HTML tags to find the id
-      this.update(new Workorder(row, id))
+      this.update(new Workorder(this.tableColumns, row, id))
     }
     
     return this
@@ -124,7 +115,7 @@ class Database {
   /**
    * Updates the database with the supplied Workorder, Database, or DataTable array
    * 
-   * @param {Workorder|Database|DataTable} data 
+   * @param {Workorder|Database|Array} data 
    */
   update(data) {
     try {
@@ -134,8 +125,8 @@ class Database {
         } else {
           this.data[data.id].update(data)
         }
-      } else if (typeof(data.$) === 'function') { // DataTable  
-        this.update(new Database().fromTable(data))
+      } else if (Array.isArray(data)) { // Array  
+        this.update(new Database().fromArray(data))
       } else if (data instanceof Database) { // Another Database 
         for (let i in data.data) {
           let row = data.data[i]
@@ -143,7 +134,7 @@ class Database {
           if (typeof(row.id) === 'undefined') throw new Error('Wrong data fed to update(), missing property "id" in row')
 
           if (typeof(this.data[row.id]) === 'undefined') { // Do this database already have this id?
-            this.update(new Workorder(row, row.id))
+            this.update(new Workorder(this.tableColumns, row, row.id))
           } else {            
             this.update(row) // update Workorder entry with new data
           }
@@ -181,12 +172,10 @@ class Database {
   load() {
     var data = JSON.parse(localStorage.getItem(this.storageName))
 
-    if (data == null) {
-      return false
-    } else {
+    if (data != null) {
       Object.assign(this, data)
       for (let i in this.data) { // Data in DB is in general object form, convert to Workorder
-        this.data[i] = new Workorder(this.data[i]) 
+        this.data[i] = new Workorder(this.tableColumns, this.data[i]) 
       }
     }
 

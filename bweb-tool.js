@@ -68,55 +68,40 @@ function uiBooster() {
 }
 
 /**
- * Parses the row-colors and saves them as a data-attribute in the first column
- * 
- * This allows us to retain the rowcolor-information in the database.
- * 
- * @param {DataTable} dt 
- */
-function parseRowColors(dt) {
-  dt.rows('[style^="background-color"]').every(function(index){ // Every colored row
-    var color = ''
-    switch (this.node().style.backgroundColor) {
-      case 'rgb(252, 255, 158)': // #fcff9e
-        color = 'yellow'
-        break
-      case 'rgb(170, 238, 255)': // #aaeeff
-        color = 'blue'
-        break
-      case 'rgb(250, 203, 142)': // #facb8e
-        color = 'orange'
-        break
-      case 'rgb(246, 246, 246)': // #f6f6f6
-      default:
-        color = 'header'
-    }
-
-    this.node().style.backgroundColor = '' // remove stylized background color
-    this.node().classList.add('rowcolor-'+color) // Adds a class to color the row
-    var celldata = $(this.cell(index,1).node().firstChild).attr('data-rowcolor','rowcolor-'+color)[0].outerHTML
-    this.cell(index,1).data(celldata) // Updates the cells actual data, not just visuals.
-
-  })
-}
-
-/**
  * Duplicate table to remove tablesorter, and adds a tfoot for the filter fields.
  * 
  * Ideally we'd just kill the tablesorter addon, but website runs an older version of 
  * tablesorter which does not support any such functionality. 
+ * 
+ * @param {Array} columns Array of the columns to add to the table
  */
-function tableFix() {
-  var newtable = $('<table id="bweb" width="100%" class="compact row-border hover">')
-  .html(rawHTMLfix($('#oversikt').html()));
-  $('<tfoot/>')
-    .html($(newtable).find('thead').html())
-    .css('display','table-header-group')
-    .appendTo(newtable);
-  newtable.find('thead').css('display','table-row-group'); // Styles the head to drop below footer
-  newtable.find('tfoot th').removeClass('header').html(''); // Clears the content of the cells copied from thead
-  newtable.insertBefore('#oversikt');
-  $('#oversikt').remove(); // Remove original table (has tablesorter active on it)
+function initTable(columns) {
+  var table = $('<table id="bweb" width="100%" class="compact row-border hover"/>')
+  var header = $('<thead/>')
+    .css('display','table-row-group') // Styles the head to drop below footer
+    .append('<tr/>') 
+  var footer = $('<tfoot/>')
+    .css('display','table-header-group') // Puts the footer on top of the table
+    .append('<tr/>')
+  
+  for (col of columns) {
+    header.find('tr').append($('<th/>'.html(col.ui)))
+    footer.find('tr').append('<th>')
+  }
+
+  table.append(header,'<tbody/>',footer)
+  
+  return table
+}
+
+/**
+ * Inserts the prepared table into the DOM and removes the original table
+ * 
+ * @param {HTMLTableElement} table 
+ */
+function insertTableToDOM(table) {
+  table.insertBefore('#oversikt')
+  $('#oversikt').remove() // Remove original table (has tablesorter active on it)
 }
 
 /**
@@ -129,20 +114,25 @@ function rawHTMLfix(string) {
     .replace(/<\/td>-->/g, '</td>')
     .replace( '<th>adresse</th>',
               '<th>adresse</th>\n<th>beskrivelse</th>')
+    .replace(/style="background-color: #f6f6f6;"/g,'class="rowcolor-header"')
+    .replace(/style="background-color: #facb8e;"/g,'class="rowcolor-orange"')
+    .replace(/style="background-color: #aaeeff;"/g,'class="rowcolor-blue"')
+    .replace(/style="background-color: #fcff9e;"/g,'class="rowcolor-yellow"')
 }
 
 /**
  * Sets up DataTable on #bweb
  */
-function initDatatable(settings){
-  return new Promise((resolve,reject) => {
+function initDatatable(table, settings, columns){
+  return new Promise((resolve) => {
     $.fn.dataTable.moment('DD.MM.YYYY HH:mm'); // Prepare Moment.js for sorting datetime
-    $('#bweb').DataTable({
-      "stateSave": (typeof(settings.stateSave) == 'undefined') ? false : settings.stateSave, // Enables the state of the filters and sortings to be saved for the next session
-      "language": {"url":"//cdn.datatables.net/plug-ins/1.10.20/i18n/Norwegian-Bokmal.json"}, // Adds l10n
-      "order": [[ 1, "desc" ]], // Selects the initial ordering of the table
-      "paging": false, // Defines if paging should be enabled
-      "columnDefs": [ // Column number 6 is set to be invisible
+    table.DataTable({
+      stateSave: (typeof(settings.stateSave) == 'undefined') ? false : settings.stateSave, // Enables the state of the filters and sortings to be saved for the next session
+      language: {"url":"//cdn.datatables.net/plug-ins/1.10.20/i18n/Norwegian-Bokmal.json"}, // Adds l10n
+      order: [[ 1, "desc" ]], // Selects the initial ordering of the table
+      paging: false, // Defines if paging should be enabled
+      columns: columns,
+      columnDefs: [ 
         {
             "targets": (typeof(settings.hiddenCols) == 'undefined') ? [7,8] : settings.hiddenCols,
             "visible": false
@@ -220,20 +210,11 @@ function datatableLoaded() {
  * 
  * @param {DataTable} datatable datatable api
  */
-function dataUpdated(settings, dt) {
-  filterRefresh(dt, settings); // Refresh the table's filters.
-
-  dt.rows().every(index=>{
-    $(dt.row(index).node()).attr('title',dt.row(index).data()[7]) // Adds the short desc. as a title to the row
+function dataUpdated(dt) {
+  dt.rows().every(function(){
+    this.$().attr('title',this.data()[7]) // Adds the short desc. as a title to the row
   })
 
-  parseRowColors(dt) // Parses the info from the different row-colors and stores them more systematically.
-
-  dt.draw(); // Render the table
-
-  refreshDatabase(dt); // Refresh the database with the current datatable content.
-
-  $('thead > tr, tfoot > tr').attr('style','') // Remove the color from table footer and header
   $('[data-rowcolor][data-rowcolor!=""]').each(function(){ // Finds cells with data-rowcolor
     $(this).parents('tr').addClass($(this).data('rowcolor')) // Colors the row
   })  
@@ -242,6 +223,8 @@ function dataUpdated(settings, dt) {
 
 /**
  * Refreshes the database with the data in the current datatable
+ * 
+ * @deprecated
  * 
  * @param {DataTable} datatable 
  */
@@ -260,13 +243,15 @@ function refreshDatabase(datatable) {
  * 
  * Works as a temporary cache before fresh data is loaded from server.
  * 
+ * @deprecated
+ * 
  * @param {DataTable} datatable 
  */
-function appendFromDB(settings, datatable) {
+function appendFromDB(datatable) {
   var db = new Database()
   if (db.load()) { // is database present?
     db.update(datatable) // Refresh the data before we clear it below
-    var dataarray = db.toTable()
+    var dataarray = db.toArray()
     datatable.clear()
     datatable.rows.add(dataarray)
   }
@@ -276,8 +261,6 @@ function appendFromDB(settings, datatable) {
  * Extension's settings was updated, lets update the page etc.
  */
 function settingsUpdated() {
-  var dt = $('#bweb').DataTable()
-  dt.state.clear()
   document.location.reload()
 }
 
@@ -376,7 +359,7 @@ function backgroundRefresh(settings) {
       for (row of rows) {
         tbl.row.add(row);
       }
-      dataUpdated(settings, tbl); // Data is now updated, lets run this to trigger any additional work on the data.
+      dataUpdated(tbl); // Data is now updated, lets run this to trigger any additional work on the data.
 
       $('#refresh-feedback').html(new Date().toLocaleString() + ' - Oppdatert!').removeClass('bad-txt').addClass('good-txt');
     }
@@ -402,12 +385,12 @@ function backgroundRefresh(settings) {
  * @param {DataTable} datatable datatable api
  * @param {Object} settings 
  */
-function filterRefresh(datatable, settings) {
+function refreshFilters(settings, datatable) {
   var colarr = [9,10,11,12,13] // An array of all the columns to apply filter to
   var applySpecial = (typeof(settings.applySpecial) == 'undefined') ? true : settings.applySpecial
 
   if(applySpecial) {
-    municipalityFilterRefresh(datatable, 5) // Refreshes our special municipality filter
+    refreshMunicipalityFilter(datatable, 5) // Refreshes our special municipality filter
   } else {
     if (!colarr.includes(5)) {
       colarr.push(5)
@@ -440,7 +423,7 @@ function filterRefresh(datatable, settings) {
  * @param {DataTables} dt 
  * @param {Integer} column 
  */
-function municipalityFilterRefresh(dt, column) {
+function refreshMunicipalityFilter(dt, column) {
   var col = dt.column(column);
   var sel = $(col.footer()).find('select').empty().append('<option value="">Alle</option>');
   var municipalities = [];
@@ -488,7 +471,7 @@ function loadSettings() {
   })
 }
 
-function datatableInitialized(settings,dt) {
+function initFilters(settings,dt) {
   var colarr = [9,10,11,12,13] // An array of all the columns to apply filter to
   var applySpecial = (typeof(settings.applySpecial) == 'undefined') ? true : settings.applySpecial
   
@@ -517,23 +500,38 @@ function datatableInitialized(settings,dt) {
   });
 }
 
+function parseTablesorterTable($tbody) {
+
+}
+
 /**
  * Doc Ready!
  */
-var DOMready = (f)=>(document.readyState === 'complete')?f():document.addEventListener('DOMContentLoaded',f,false)
+const DOMready = (f)=>(document.readyState === 'complete')?f():document.addEventListener('DOMContentLoaded',f,false)
+
+const settings = loadSettings() // Loads settings from localstore (Async)
+const database = new Database().load() // Inits the database and loads data from localstore (Sync)
+const table = initTable(database.columns) // Initialize the table to hold our data and to later load DataTables onto (Sync)
+
 DOMready(()=>{
-  tableFix() // Prepares the table
-  uiBooster() // Style and DOM mods
+  insertTableToDOM(table) // Inserts table to DOM, and prepares it for DataTables (Sync)
+  uiBooster() // Style and DOM mods (Sync)
+  //load tabledata into database
+  
+  const dt = initDatatable(table, settings, database.columns).then((dt)=>{ // Inits DataTable (Async)
+    initFilters(settings, dt) // Prepares the filters no the table (Sync)
+    //load from database to table
 
-  const settings = loadSettings() // Loads settings from localstore
-  const dt       = initDatatable(settings) // Inits DataTable
-
-  Promise.all([settings, dt]).then((vals) => {
-    datatableInitialized(...vals) // Runs when DataTable is finished loading
-    appendFromDB(...vals) // While we wait for the background refresh, append DB-data to our table
-    dataUpdated(...vals) // Data has been added to the table, this triggers more data-handling.
-    datatableLoaded(...vals) // Everything is now loaded, lets run this to add more functionality.
-    backgroundRefresh(...vals); // Fires a refresh of the table in the background, this is to load the rest of the table.
   })
+  
+  dataUpdated(dt) // Data has been added to the table, this triggers more data-handling. (Sync)
 
+  refreshFilters(settings, dt) // Refresh the table's filters. (Sync)
+
+  dt.draw(); // Render the table
+  
+  datatableLoaded() // Everything is now loaded, lets run this to add more functionality. (Async)
+  
+  backgroundRefresh(settings); // Fires a refresh of the table in the background, this is to load the rest of the table. (Async)
+  
 })
