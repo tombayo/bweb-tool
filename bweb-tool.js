@@ -85,23 +85,13 @@ function initTable(columns) {
     .append('<tr/>')
   
   for (col of columns) {
-    header.find('tr').append($('<th/>'.html(col.ui)))
+    header.find('tr').append($('<th/>').html(col.ui))
     footer.find('tr').append('<th>')
   }
 
   table.append(header,'<tbody/>',footer)
   
   return table
-}
-
-/**
- * Inserts the prepared table into the DOM and removes the original table
- * 
- * @param {HTMLTableElement} table 
- */
-function insertTableToDOM(table) {
-  table.insertBefore('#oversikt')
-  $('#oversikt').remove() // Remove original table (has tablesorter active on it)
 }
 
 /**
@@ -114,10 +104,11 @@ function rawHTMLfix(string) {
     .replace(/<\/td>-->/g, '</td>')
     .replace( '<th>adresse</th>',
               '<th>adresse</th>\n<th>beskrivelse</th>')
-    .replace(/style="background-color: #f6f6f6;"/g,'class="rowcolor-header"')
-    .replace(/style="background-color: #facb8e;"/g,'class="rowcolor-orange"')
-    .replace(/style="background-color: #aaeeff;"/g,'class="rowcolor-blue"')
-    .replace(/style="background-color: #fcff9e;"/g,'class="rowcolor-yellow"')
+    .replace(/style="background-color: #f6f6f6;">/g,'class="rowcolor-header"><td>rowcolor-header</td>')
+    .replace(/style="background-color: #facb8e;">/g,'class="rowcolor-orange"><td>rowcolor-orange</td>')
+    .replace(/style="background-color: #aaeeff;">/g,'class="rowcolor-blue"><td>rowcolor-blue</td>')
+    .replace(/style="background-color: #fcff9e;">/g,'class="rowcolor-yellow"><td>rowcolor-yellow</td>')
+    .replace(/<td title="">/g,'<td></td><td>')
 }
 
 /**
@@ -129,7 +120,7 @@ function initDatatable(table, settings, columns){
     table.DataTable({
       stateSave: (typeof(settings.stateSave) == 'undefined') ? false : settings.stateSave, // Enables the state of the filters and sortings to be saved for the next session
       language: {"url":"//cdn.datatables.net/plug-ins/1.10.20/i18n/Norwegian-Bokmal.json"}, // Adds l10n
-      order: [[ 1, "desc" ]], // Selects the initial ordering of the table
+      //order: [[ 1, "desc" ]], // Selects the initial ordering of the table
       paging: false, // Defines if paging should be enabled
       columns: columns,
       columnDefs: [ 
@@ -170,39 +161,16 @@ function btnReady(id,text) {
 /**
  * Runs when DataTable is fully loaded, hence used to do stuff with DataTable
  */
-function datatableLoaded() {
+function initChosen() {
+  /** Code below is very blocking, async somehow */
   $('.chosen-select').chosen({width: "-webkit-fill-available"}); // Applies Chosen to the select-fields.
 
   if (window.location.hash) { // a hash is used to imply a filter on pageload, lets activate it
-    filterStatus(window.location.hash.replace(/[#]/, ''));
+    $('.chosen-select:last')
+      .val([window.location.hash.replace(/[#]/, '')])
+      .trigger('change')
+      .trigger('chosen:updated'); // Run the filter-change.
   }
-
-  tableLoading('#bweb').hide() // Adds the loadingbar to the table, then hides it
-
-  // Moves the filter search field to the navbar
-  $('#bweb_filter')
-    .appendTo('#navigation')
-    .css({float:'right',marginBottom:'0px'})
-    .find('input')
-      .addClass('nav-item')
-      .height($('li > a').first().height())
-      .css('max-width','150px')
-      .attr('placeholder','Søk i tabell...')
-      .attr('title', 'Søk i tabellen under.')
-      .appendTo('#bweb_filter')
-      .siblings('label').remove();
-  $('#bweb_filter').append('<span class="nav-item">'); // Adds some space
-
-  $('#filter-unread').on('click',function(){
-    var $btn = $(this);
-    var dt = $('#bweb').DataTable();
-    if ($btn.is('.toggled')) {
-      dt.rows(':not(.rowcolor-orange)').nodes().each(function(e){$(e).show()});
-    } else {
-      dt.rows(':not(.rowcolor-orange)').nodes().each(function(e){$(e).hide()});
-    }
-    $btn.toggleClass('toggled');
-  });
 }
 
 /**
@@ -222,42 +190,6 @@ function dataUpdated(dt) {
 }
 
 /**
- * Refreshes the database with the data in the current datatable
- * 
- * @deprecated
- * 
- * @param {DataTable} datatable 
- */
-function refreshDatabase(datatable) {
-  var db = new Database()
-  if (db.load()) { // is database present?
-    db.update(datatable)
-  } else {
-    db.fromTable(datatable)
-  }
-  db.save()
-}
-
-/**
- * Appends database data to the supplied datatable
- * 
- * Works as a temporary cache before fresh data is loaded from server.
- * 
- * @deprecated
- * 
- * @param {DataTable} datatable 
- */
-function appendFromDB(datatable) {
-  var db = new Database()
-  if (db.load()) { // is database present?
-    db.update(datatable) // Refresh the data before we clear it below
-    var dataarray = db.toArray()
-    datatable.clear()
-    datatable.rows.add(dataarray)
-  }
-}
-
-/**
  * Extension's settings was updated, lets update the page etc.
  */
 function settingsUpdated() {
@@ -270,7 +202,7 @@ function settingsUpdated() {
  * @param {String} status 
  */
 function filterStatus(status) {
-  $('.chosen-select:last').val([status]).trigger('change').trigger('chosen:updated'); // Run the filter-change.
+  
 }
 
 /**
@@ -498,9 +430,51 @@ function initFilters(settings,dt) {
         column.search( val ? '^'+val+'$' : '', true, false ).draw();
       });
   });
+
+  tableLoading('#bweb').hide() // Adds the loadingbar to the table, then hides it
+
+  // Moves the filter search field to the navbar
+  $('#bweb_filter')
+    .appendTo('#navigation')
+    .css({float:'right',marginBottom:'0px'})
+    .find('input')
+      .addClass('nav-item')
+      .height($('li > a').first().height())
+      .css('max-width','150px')
+      .attr('placeholder','Søk i tabell...')
+      .attr('title', 'Søk i tabellen under.')
+      .appendTo('#bweb_filter')
+      .siblings('label').remove();
+  $('#bweb_filter').append('<span class="nav-item">'); // Adds some space
+
+  $('#filter-unread').on('click',function(){
+    var $btn = $(this);
+    var dt = $('#bweb').DataTable();
+    if ($btn.is('.toggled')) {
+      dt.rows(':not(.rowcolor-orange)').nodes().each(function(e){$(e).show()});
+    } else {
+      dt.rows(':not(.rowcolor-orange)').nodes().each(function(e){$(e).hide()});
+    }
+    $btn.toggleClass('toggled');
+  });
 }
 
-function parseTablesorterTable($tbody) {
+/**
+ * Converts a raw html string into an array based on the containing table.
+ * 
+ * Searches for table#oversikt within the string and extracts the data to an array. 
+ * Uses the @see rawHTMLfix function on the string before searching.
+ * 
+ * @param {String} htmlstring A raw html string containing the tablesorter Table
+ * @returns {Array} An array extracted from the table data.
+ */
+function parseTablesorterTable(htmlstring) {
+  let tblstart  = htmlstring.indexOf('<table id="oversikt"') // Find the table
+  let tblend    = htmlstring.indexOf('</table>', tblstart) // find the next end tag
+  let tblstring = rawHTMLfix(htmlstring.slice(tblstart, tblend)) // Slice out the table
+  let tbldoc    = new DOMParser().parseFromString(tblstring, 'text/html') // Parse the HTML 
+
+  return [...tbldoc.querySelector("#oversikt").tBodies[0].rows].map(r => [...r.cells].map(c => c.innerText))
 
 }
 
@@ -514,24 +488,21 @@ const database = new Database().load() // Inits the database and loads data from
 const table = initTable(database.columns) // Initialize the table to hold our data and to later load DataTables onto (Sync)
 
 DOMready(()=>{
-  insertTableToDOM(table) // Inserts table to DOM, and prepares it for DataTables (Sync)
+  table.insertBefore('#oversikt') // Inserts datatable to DOM (Sync)
   uiBooster() // Style and DOM mods (Sync)
-  //load tabledata into database
+  database.update(parseTablesorterTable($('#oversikt').parent().html())).save() // Update the database with stock table data (Sync)
   
   const dt = initDatatable(table, settings, database.columns).then((dt)=>{ // Inits DataTable (Async)
-    initFilters(settings, dt) // Prepares the filters no the table (Sync)
-    //load from database to table
-
+    initFilters(settings, dt) // Prepares the filters to the table (Sync)
+    table.data(database.data) // Feeds the table with database data. (Sync)
+    //dataUpdated(dt) // Data has been added to the table, this triggers more data-handling. (Sync)
+    dt.draw(); // Render the table
   })
   
-  dataUpdated(dt) // Data has been added to the table, this triggers more data-handling. (Sync)
+  initChosen() // Inits the Chosen addon to our select-fields (Sync)
 
-  refreshFilters(settings, dt) // Refresh the table's filters. (Sync)
-
-  dt.draw(); // Render the table
+  refreshFilters(settings, dt) // Refresh the table's filters, Chosen must be initialized (Sync)
   
-  datatableLoaded() // Everything is now loaded, lets run this to add more functionality. (Async)
-  
-  backgroundRefresh(settings); // Fires a refresh of the table in the background, this is to load the rest of the table. (Async)
+  backgroundRefresh(settings) // Fires a refresh of the table in the background, this is to load the rest of the table. (Async)
   
 })

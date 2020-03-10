@@ -63,6 +63,7 @@ class Database {
     this.created      = new Date().toJSON()
     this.data         = {}
     this.columns      = [
+      { data: 'rowcolor', ui: 'rowcolor'},
       { data: 'warning', ui: 'Varsel' },
       { data: 'url', ui: 'NTE ref' },
       { data: 'localRef', ui: 'Ekstern ref' },
@@ -105,7 +106,7 @@ class Database {
    */
   fromArray(dataarray) {
     for (let row of dataarray) {
-      let id = row[1].replace(/<[^>]+>/g, ''); // Remove HTML tags to find the id
+      let id = row[2].replace(/<[^>]+>/g, ''); // Remove HTML tags to find the id
       this.update(new Workorder(this.tableColumns, row, id))
     }
     
