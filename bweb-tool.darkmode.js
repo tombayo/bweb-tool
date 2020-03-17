@@ -9,8 +9,12 @@ function applyDarkmode() {
 
     let darkcss = chrome.extension.getURL('bweb-tool-dark.css')
 
-    if($(`link[href="${darkcss}"]`).length == 0) { // Check if stylesheet already is applied
-      $('head').append(`<link rel="stylesheet" type="text/css" href="${darkcss}">`)
+    if(document.querySelector(`link[href="${darkcss}"]`) === null) { // Check if stylesheet already is applied
+      let link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.type = 'text/css'
+      link.href = darkcss
+      document.head.append(link)
     }
   });
 }

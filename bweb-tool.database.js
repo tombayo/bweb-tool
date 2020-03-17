@@ -85,7 +85,7 @@ class Database {
 
      return this
   }
-  
+
   /**
    * Converts the database into table data that DataTable understands
    * 
@@ -177,7 +177,14 @@ class Database {
     var data = JSON.parse(localStorage.getItem(this.storageName))
 
     if (data != null) {
-      Object.assign(this, data)
+      // Removes values we don't want/need to overwrite
+      delete data.storageName
+      delete data.name
+      delete data.filterColumns
+      delete data.tableColumns
+      delete data.columns
+
+      Object.assign(this, data) // Overwrites with parsed obj from localstore
       for (let i in this.data) { // Data in DB is in general object form, convert to Workorder
         this.data[i] = new Workorder(this.tableColumns, this.data[i]) 
       }

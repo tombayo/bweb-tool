@@ -1,4 +1,4 @@
-body, #header,#container, #navigation, #footer, #bweb_info, table, textarea, input, select, #order_form > table td {
+body, #header,.header, th, h2, #container, #navigation, #footer, #bweb_info, table, textarea, input, select, #order_form > table td, #center_form > table td {
   background-color: #252525 !important;
   color: #ccc !important;
 }

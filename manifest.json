@@ -24,6 +24,14 @@
   "content_scripts": [
     {
       "matches": [
+        "https://bweb2.nteb.no/*"
+      ],
+      "js": [
+        "bweb-tool.darkmode.js"
+      ]
+    },
+    {
+      "matches": [
         "https://bweb2.nteb.no/",
         "https://bweb2.nteb.no/akseptert/",
         "https://bweb2.nteb.no/ferdig/",
@@ -33,7 +41,6 @@
       "run_at": "document_start",
       "js": [
         "lib/jQuery-3.4.1/jquery-3.4.1.min.js",
-        "bweb-tool.darkmode.js",
         "lib/EventEmitter-5.2.8/EventEmitter.min.js",
         "lib/DataTables-1.10.20/js/jquery.dataTables.min.js",
         "lib/Chosen-1.8.7/chosen.jquery.min.js",
@@ -55,8 +62,7 @@
       ],
       "js": [
         "lib/jQuery-3.4.1/jquery-3.4.1.min.js",
-        "bweb-tool.workorder.js",
-        "bweb-tool.darkmode.js"
+        "bweb-tool.workorder.js"
       ]
     },
     {
@@ -65,8 +71,7 @@
       ],
       "js": [
         "lib/jQuery-3.4.1/jquery-3.4.1.min.js",
-        "bweb-tool.workorder.comment.js",
-        "bweb-tool.darkmode.js"
+        "bweb-tool.workorder.comment.js"
       ]
     },
     {
@@ -75,8 +80,7 @@
       ],
       "js": [
         "lib/jQuery-3.4.1/jquery-3.4.1.min.js",
-        "bweb-tool.workorder.upload.js",
-        "bweb-tool.darkmode.js"
+        "bweb-tool.workorder.upload.js"
       ],
       "css": [
         "bweb-tool.css"
