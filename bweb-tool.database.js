@@ -63,23 +63,25 @@ class Database {
     this.created      = new Date().toJSON()
     this.data         = {}
     this.columns      = [
-      { data: 'rowcolor', ui: 'rowcolor'},
-      { data: 'warning', ui: 'Varsel' },
-      { data: 'url', ui: 'NTE ref' },
-      { data: 'localRef', ui: 'Ekstern ref' },
-      { data: 'orderDate', ui: 'Reg. dato' },
-      { data: 'customer', ui: 'Kunde' },
-      { data: 'location', ui: 'Poststed' },
-      { data: 'address', ui: 'Adresse' },
-      { data: 'shortdesc', ui: 'Beskrivelse' },
-      { data: 'contractor', ui: 'Entreprenør' },
-      { data: 'technician', ui: 'Montør' },
-      { data: 'product', ui: 'Produkt' },
-      { data: 'department', ui: 'Kategori' },
-      { data: 'handler', ui: 'Bestilt av' },
-      { data: 'status', ui: 'Status' }
+      { name: 'rowcolor', ui: 'rowcolor', visible: false},
+      { name: 'warning', ui: 'Varsel' },
+      { name: 'url', ui: 'NTE ref' },
+      { name: 'localref', ui: 'Ekstern ref' },
+      { name: 'orderdate', ui: 'Reg. dato' },
+      { name: 'customer', ui: 'Kunde' },
+      { name: 'location', ui: 'Poststed' },
+      { name: 'address', ui: 'Adresse' },
+      { name: 'shortdesc', ui: 'Beskrivelse' },
+      { name: 'contractor', ui: 'Entreprenør' },
+      { name: 'technician', ui: 'Montør', applyFilter: true},
+      { name: 'product', ui: 'Produkt', applyFilter: true},
+      { name: 'department', ui: 'Kategori', applyFilter: true},
+      { name: 'handler', ui: 'Bestilt av', applyFilter: true},
+      { name: 'status', ui: 'Status', applyFilter: true}
     ]
-    this.tableColumns = this.columns.map((col)=>col.data)
+    this.tableColumns = this.columns.map(col=>col.name)
+    this.columns = this.columns.map(col=>Object.assign(col,{data:col.name})) // Duplicates the name prop to a new data prop
+    this.filterColumns = this.columns.filter(col => typeof(col.applyFilter) !== 'undefined').map(col=>col.name+':name')
 
      return this
   }
@@ -88,12 +90,12 @@ class Database {
    * 
    * Use DataTable.rows.add(dataarray).draw() to add and update the table.
    */
-  toArray() {
+  toArray(workorder = false) {
     var dataarray = []
     var db = this.data
 
     for (let i in db) {
-      dataarray.push(db[i].toArray())
+      dataarray.push((workorder)?db[i]:db[i].toArray())
     }
     return dataarray
   }

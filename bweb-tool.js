@@ -114,25 +114,25 @@ function rawHTMLfix(string) {
 /**
  * Sets up DataTable on #bweb
  */
-function initDatatable(table, settings, columns){
-  return new Promise((resolve) => {
-    $.fn.dataTable.moment('DD.MM.YYYY HH:mm'); // Prepare Moment.js for sorting datetime
-    table.DataTable({
-      stateSave: (typeof(settings.stateSave) == 'undefined') ? false : settings.stateSave, // Enables the state of the filters and sortings to be saved for the next session
-      language: {"url":"//cdn.datatables.net/plug-ins/1.10.20/i18n/Norwegian-Bokmal.json"}, // Adds l10n
-      //order: [[ 1, "desc" ]], // Selects the initial ordering of the table
-      paging: false, // Defines if paging should be enabled
-      columns: columns,
-      columnDefs: [ 
-        {
-            "targets": (typeof(settings.hiddenCols) == 'undefined') ? [7,8] : settings.hiddenCols,
-            "visible": false
-        }
-      ],
-      initComplete: function(){
-        resolve(this.api())
+function initDatatable(){
+  $.fn.dataTable.moment('DD.MM.YYYY HH:mm'); // Prepare Moment.js for sorting datetime
+  var hiddencols = (typeof(settings.hiddenCols) == 'undefined') ? ['shortdesc','contractor'] : settings.hiddenCols
+
+  return table.DataTable({
+    stateSave: (typeof(settings.stateSave) == 'undefined') ? false : settings.stateSave, // Enables the state of the filters and sortings to be saved for the next session
+    language: {"url":"//cdn.datatables.net/plug-ins/1.10.20/i18n/Norwegian-Bokmal.json"}, // Adds l10n
+    order: [[ database.tableColumns.indexOf('url'), "desc" ]], // Selects the initial ordering of the table
+    paging: false, // Defines if paging should be enabled
+    columns: database.columns,
+    columnDefs: [ 
+      {
+          "targets": hiddencols.map(col=>database.tableColumns.indexOf(col)),
+          "visible": false
       }
-    })
+    ],
+    initComplete: function(){
+      emitter.emit('dataTableReady')
+    }
   })
 }
 
@@ -178,15 +178,15 @@ function initChosen() {
  * 
  * @param {DataTable} datatable datatable api
  */
-function dataUpdated(dt) {
-  dt.rows().every(function(){
-    this.$().attr('title',this.data()[7]) // Adds the short desc. as a title to the row
+function dataUpdated() {
+  datatable.rows().every(function(){
+    this.$().attr('title',this.data().shortdesc) // Adds the short desc. as a title to the row
   })
 
   $('[data-rowcolor][data-rowcolor!=""]').each(function(){ // Finds cells with data-rowcolor
     $(this).parents('tr').addClass($(this).data('rowcolor')) // Colors the row
   })  
-  $('#filter-unread > span').html(dt.rows('.rowcolor-orange').count()); // Counts the orange rows and display in menu-button
+  $('#filter-unread > span').html(datatable.rows('.rowcolor-orange').count()); // Counts the orange rows and display in menu-button
 }
 
 /**
@@ -210,9 +210,9 @@ function filterStatus(status) {
  * 
  * @param {string} tableid the id of the table
  */
-function tableLoading(tableid) {
-  var head = $(tableid + ' thead');
-  var row = $('<th colspan="11">').css({
+function tableLoading() {
+  var head = $('#bweb thead')
+  var row = $(`<th colspan="${database.columns.length}">`).css({
     borderBottom:'0',
     letterSpacing:'20px',
     textAlign:'center'
@@ -230,83 +230,61 @@ function tableLoading(tableid) {
 }
 
 /**
- * A fix for a bug with firefox
- * @see https://bugzilla.mozilla.org/show_bug.cgi?id=1322113
- * @see https://discourse.mozilla.org/t/webextension-xmlhttprequest-issues-no-cookies-or-referrer-solved/11224/7
- */
-function getXMLHttp(){
-  try {
-     return XPCNativeWrapper(new window.wrappedJSObject.XMLHttpRequest());
-  }
-  catch(evt){
-     return new XMLHttpRequest();
-  }
-}
-
-/**
  * Function that performs the ajax call to the current href.
- * Runs the supplied callback function "whensuccess" on success
- * 
- * @param {Function} whensuccess 
+ *  
  */
-function ajaxRefresh(whensuccess) {
-  var xhr = getXMLHttp();
-  xhr.onreadystatechange = function(){
-    if(this.readyState == XMLHttpRequest.DONE) {
-      whensuccess(this.responseText, this.status);
-    }
-  }  
-  xhr.open("POST", window.location.href, true);
-  xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-  //xhr.withCredentials = true;
-  xhr.send($.param({
-    csrfmiddlewaretoken: $('[name="csrfmiddlewaretoken"]').val(),
-    kategori: '',
-    antall: 'Alle',
-  }));
+async function ajaxRefresh() {
+  const response = await fetch(window.location.href, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: $.param({
+      csrfmiddlewaretoken: $('[name="csrfmiddlewaretoken"]').val(),
+      kategori: '',
+      antall: 'Alle',
+    })
+  })
+
+  return response
 }
 
 /**
  * Loads the full table in background and refreshes the visible content.
  */
-function backgroundRefresh(settings) {
+function backgroundRefresh() {
   btnLoad('#refresh-btn', 'Oppdaterer');
   $('#refresh-feedback').html('Venter på server...').attr('title',''); // clears the feedback-area
   $('.loading-slow').show()
-  ajaxRefresh(function(data, status){
-    var html = $($.parseHTML(rawHTMLfix(data))).find('#oversikt tbody');
 
-    if (status !== 200) { // Something went wrong
-      console.log('AjaxStatus:', status);
-      if (status === 0) { // No internet, possibly
+  ajaxRefresh().then((response) => {
+    if (response.status !== 200) { // Something went wrong
+      console.log('AjaxStatus:', response.status);
+      if (response.status === 0) { // No internet, possibly
         $('#refresh-feedback').html(new Date().toLocaleString() +' - Problemer med nett-tilkoblingen, vennligst prøv igjen...').addClass('bad-txt');
       } else {
-        $('#refresh-feedback').html(new Date().toLocaleString() +' - Feilkode fra server: ' + status).addClass('bad-txt');
+        $('#refresh-feedback').html(new Date().toLocaleString() +' - Feilkode fra server: ' + response.status).addClass('bad-txt');
       }
-    } else if (html.children().length == 0) { // We have a response, but we have no table data, normally due to expired login.
-      $('#refresh-feedback').html(new Date().toLocaleString() + ' - Det ser ut som at du har blitt logget ut, last inn siden på nytt og prøv igjen...').addClass('bad-txt');
-    } else { // Everything checks out, lets feed data into the table
-      var rows = html.children();
-      var tbl = $('#bweb').DataTable().clear();
-      for (row of rows) {
-        tbl.row.add(row);
-      }
-      dataUpdated(tbl); // Data is now updated, lets run this to trigger any additional work on the data.
+    } else {
+      response.text().then((data)=> {
+        var html = parseTablesorterTable(data)
 
-      $('#refresh-feedback').html(new Date().toLocaleString() + ' - Oppdatert!').removeClass('bad-txt').addClass('good-txt');
-    }
+        if (html) { // check if we have a table in the data
+          database.update(html).save() // updates the database and saves it to localstore
+          emitter.emit('DBupdated') // Informs listeners that the database has been updated
+
+          $('#refresh-feedback').html(new Date().toLocaleString() + ' - Oppdatert!').removeClass('bad-txt').addClass('good-txt');
+        } else { // No table usually means logged out user
+          $('#refresh-feedback').html(new Date().toLocaleString() + ' - Det ser ut som at du har blitt logget ut, last inn siden på nytt og prøv igjen...').addClass('bad-txt');
+        }
+      })
+    } 
+
     $('#refresh-feedback').attr('title',$('#refresh-feedback').html());
     btnReady('#refresh-btn', 'Oppdater &#8635;');
     $('.loading-slow').hide()
-  });
 
-  var autorefresh = (typeof(settings.autorefresh) == 'undefined') ? true : settings.autorefresh
-  var autorefreshtime = (typeof(settings.autorefreshtime) == 'undefined') ? '10' : settings.autorefreshtime
-  if (autorefresh) {
-    setTimeout(()=>backgroundRefresh(settings), parseInt(autorefreshtime)*60*1000) // Refresh table after 5 mins
-  }
-
-
+  })
 }
 
 /**
@@ -317,15 +295,15 @@ function backgroundRefresh(settings) {
  * @param {DataTable} datatable datatable api
  * @param {Object} settings 
  */
-function refreshFilters(settings, datatable) {
-  var colarr = [9,10,11,12,13] // An array of all the columns to apply filter to
+function refreshFilters() {
+  var colarr = database.filterColumns // An array of all the columns to apply filter to
   var applySpecial = (typeof(settings.applySpecial) == 'undefined') ? true : settings.applySpecial
 
   if(applySpecial) {
-    refreshMunicipalityFilter(datatable, 5) // Refreshes our special municipality filter
+    refreshMunicipalityFilter('location:name') // Refreshes our special municipality filter
   } else {
-    if (!colarr.includes(5)) {
-      colarr.push(5)
+    if (!colarr.includes('location:name')) {
+      colarr.push('location:name')
     }
   }
 
@@ -355,8 +333,8 @@ function refreshFilters(settings, datatable) {
  * @param {DataTables} dt 
  * @param {Integer} column 
  */
-function refreshMunicipalityFilter(dt, column) {
-  var col = dt.column(column);
+function refreshMunicipalityFilter(column) {
+  var col = datatable.column(column);
   var sel = $(col.footer()).find('select').empty().append('<option value="">Alle</option>');
   var municipalities = [];
 
@@ -403,12 +381,12 @@ function loadSettings() {
   })
 }
 
-function initFilters(settings,dt) {
-  var colarr = [9,10,11,12,13] // An array of all the columns to apply filter to
+function initFilters() {
+  var colarr = database.filterColumns // An array of all the columns to apply filter to
   var applySpecial = (typeof(settings.applySpecial) == 'undefined') ? true : settings.applySpecial
   
   if (applySpecial) {
-    var col = dt.column(5); // Custom filtering for column 5 (postal town/municipality)
+    var col = datatable.column('location:name'); // Custom filtering for postal town/municipality column
     $('<select data-placeholder="Kommune.." class="chosen-select" multiple><option value="">Alle</option></select>')
       .appendTo( $(col.footer()).empty() )
       .on('change', function() {
@@ -418,10 +396,10 @@ function initFilters(settings,dt) {
         col.search( val ? '^'+val+'$' : '', true, false ).draw();
       });
   } else {
-    colarr.push(5)
+    colarr.push('location:name')
   }
 
-  dt.columns(colarr).every( function () { // Prepares the column filters
+  datatable.columns(colarr).every( function () { // Prepares the column filters
     var column = this;
     $('<select data-placeholder="Filter.." class="chosen-select" multiple><option value="">Alle</option></select>')
       .appendTo( $(column.footer()).empty() )
@@ -431,7 +409,7 @@ function initFilters(settings,dt) {
       });
   });
 
-  tableLoading('#bweb').hide() // Adds the loadingbar to the table, then hides it
+  tableLoading() // Adds the loadingbar to the table
 
   // Moves the filter search field to the navbar
   $('#bweb_filter')
@@ -449,11 +427,10 @@ function initFilters(settings,dt) {
 
   $('#filter-unread').on('click',function(){
     var $btn = $(this);
-    var dt = $('#bweb').DataTable();
     if ($btn.is('.toggled')) {
-      dt.rows(':not(.rowcolor-orange)').nodes().each(function(e){$(e).show()});
+      datatable.rows(':not(.rowcolor-orange)').nodes().each(function(e){$(e).show()});
     } else {
-      dt.rows(':not(.rowcolor-orange)').nodes().each(function(e){$(e).hide()});
+      datatable.rows(':not(.rowcolor-orange)').nodes().each(function(e){$(e).hide()});
     }
     $btn.toggleClass('toggled');
   });
@@ -473,36 +450,65 @@ function parseTablesorterTable(htmlstring) {
   let tblend    = htmlstring.indexOf('</table>', tblstart) // find the next end tag
   let tblstring = rawHTMLfix(htmlstring.slice(tblstart, tblend)) // Slice out the table
   let tbldoc    = new DOMParser().parseFromString(tblstring, 'text/html') // Parse the HTML 
+  let tbl       = tbldoc.querySelector("#oversikt") // Find the table
 
-  return [...tbldoc.querySelector("#oversikt").tBodies[0].rows].map(r => [...r.cells].map(c => c.innerText))
-
+  return (tbl)?[...tbl.tBodies[0].rows].map(r => [...r.cells].map(c => c.innerText)):false
 }
 
 /**
- * Doc Ready!
+ * Updates the Datatable with data from the database
+ * 
+ * @param {Object} settings 
+ * @param {DataTable} dt 
+ * @param {Database} database
  */
-const DOMready = (f)=>(document.readyState === 'complete')?f():document.addEventListener('DOMContentLoaded',f,false)
+function updateDatatable() {
+  datatable.clear().rows.add(database.toArray(true)).draw() // Feeds the datatable with database data.   
+  dataUpdated() // Data has been added to the table, this triggers more data-handling.
+  refreshFilters() // Refresh the table's filters, Chosen must be initialized
+}
 
-const settings = loadSettings() // Loads settings from localstore (Async)
-const database = new Database().load() // Inits the database and loads data from localstore (Sync)
-const table = initTable(database.columns) // Initialize the table to hold our data and to later load DataTables onto (Sync)
-
-DOMready(()=>{
-  table.insertBefore('#oversikt') // Inserts datatable to DOM (Sync)
-  uiBooster() // Style and DOM mods (Sync)
-  database.update(parseTablesorterTable($('#oversikt').parent().html())).save() // Update the database with stock table data (Sync)
-  
-  const dt = initDatatable(table, settings, database.columns).then((dt)=>{ // Inits DataTable (Async)
-    initFilters(settings, dt) // Prepares the filters to the table (Sync)
-    table.data(database.data) // Feeds the table with database data. (Sync)
-    //dataUpdated(dt) // Data has been added to the table, this triggers more data-handling. (Sync)
-    dt.draw(); // Render the table
+async function DOMReady() {
+  return new Promise((resolve,reject)=>{
+    if (document.readyState === 'complete') {
+      resolve(document)
+    } else {
+      document.addEventListener('DOMContentLoaded',()=>resolve(document))
+    }
   })
-  
-  initChosen() // Inits the Chosen addon to our select-fields (Sync)
+}
 
-  refreshFilters(settings, dt) // Refresh the table's filters, Chosen must be initialized (Sync)
+const settings  = loadSettings() // Loads settings from localstore 
+const database  = new Database().load() // Inits the database and loads data from localstore
+const table     = initTable(database.columns) // Initialize the table to hold our data and to later load DataTables onto
+var   datatable = {} // Prepares our global var for the DataTable, will be initialized later
+
+const emitter   = new EventEmitter() // Activates eventemitter to allow us to create event-driven workflows
+emitter.addListeners({ // Prepares our custom event listeners
+  dataTableReady: [ // Fires when datatable is ready
+    initChosen,
+    initFilters
+  ],
+  DBupdated: [ // Fires when data in the database has been updated
+    updateDatatable
+  ],
+
+})
+
+Promise.all([ settings , DOMReady() ]).then(()=>{
+  database.update(parseTablesorterTable($('#oversikt').parent().html())).save() // Update the database with stock table data
+  table.insertBefore('#oversikt') // Inserts datatable to DOM
+  $('#oversikt').hide()
+  uiBooster() // Style and DOM mods
+  backgroundRefresh() // Fires a refresh of the table in the background, this is to load the rest of the table.
   
-  backgroundRefresh(settings) // Fires a refresh of the table in the background, this is to load the rest of the table. (Async)
+  datatable = initDatatable() // Inits DataTable
+  emitter.emit('DBupdated')
   
+  
+  var autorefresh = (typeof(settings.autorefresh) == 'undefined') ? true : settings.autorefresh
+  var autorefreshtime = (typeof(settings.autorefreshtime) == 'undefined') ? '10' : settings.autorefreshtime
+  if (autorefresh) {
+    setTimeout(()=>backgroundRefresh(), parseInt(autorefreshtime)*60*1000) // Refresh table after 5 mins
+  }
 })

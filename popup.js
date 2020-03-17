@@ -5,7 +5,7 @@ function loadSettings() {
     var autorefresh = (typeof(settings.autorefresh) == 'undefined') ? 'true' : settings.autorefresh
     var autorefreshtime = (typeof(settings.autorefreshtime) == 'undefined') ? '10' : settings.autorefreshtime
     var applySpecial = (typeof(settings.applySpecial) == 'undefined') ? 'true' : settings.applySpecial
-    var hiddenCols = (typeof(settings.hiddenCols) == 'undefined') ? [7,8] : settings.hiddenCols
+    var hiddenCols = (typeof(settings.hiddenCols) == 'undefined') ? ['shortdesc','contractor'] : settings.hiddenCols
     
     $('#statesave').val(stateSave.toString())
     $('#darkmode').val(darkmode.toString())
@@ -32,7 +32,7 @@ function saveSettings(e) {
   var applySpecial = ($('#applySpecial').val() === 'true')
 
   $('input[name=columns]:checked').each(function(){
-    hiddenCols.push(parseInt($(this).val()))
+    hiddenCols.push($(this).val())
   })
 
   chrome.storage.sync.set({
