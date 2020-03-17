@@ -65,7 +65,7 @@ class Database {
     this.columns      = [
       { name: 'rowcolor', ui: 'rowcolor', visible: false},
       { name: 'warning', ui: 'Varsel' },
-      { name: 'url', ui: 'NTE ref' },
+      { name: 'url', ui: 'NTE ref', render: d=>{return `<a href="/endre/${d}">${d}</a>`}},
       { name: 'localref', ui: 'Ekstern ref' },
       { name: 'orderdate', ui: 'Reg. dato' },
       { name: 'customer', ui: 'Kunde' },
@@ -85,6 +85,7 @@ class Database {
 
      return this
   }
+  
   /**
    * Converts the database into table data that DataTable understands
    * 

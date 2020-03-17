@@ -180,12 +180,14 @@ function initChosen() {
  */
 function dataUpdated() {
   datatable.rows().every(function(){
-    this.$().attr('title',this.data().shortdesc) // Adds the short desc. as a title to the row
+    let workorder = this.data()
+    let row = this.node()
+    if (workorder.rowcolor) {
+      row.classList.add(workorder.rowcolor) // Colors the row based on it's rowcolor data
+    }
+    row.setAttribute('title', workorder.shortdesc) // Adds the short desc. as a title to the row
   })
 
-  $('[data-rowcolor][data-rowcolor!=""]').each(function(){ // Finds cells with data-rowcolor
-    $(this).parents('tr').addClass($(this).data('rowcolor')) // Colors the row
-  })  
   $('#filter-unread > span').html(datatable.rows('.rowcolor-orange').count()); // Counts the orange rows and display in menu-button
 }
 
