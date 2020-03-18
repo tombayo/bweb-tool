@@ -10,7 +10,6 @@
 function uiBooster() {
   $('#content > h2').hide(); // Hides the standard heading
   $('#content > form').hide(); // Hides the horrible "filter" form
-  //$('#header img').first().attr('src','https://nte.no/_/asset/no.smartlabs.nte:1581893708/dist/images/nte-logo.svg') // Replace logo for a transparent one
   $('#header span').first().hide(); // Removes the link "Hovedside", which is the same as the heading-link
   $('<div style="float:left"/>').append( // Creates a new Heading with link placed above navigation menu.
     $('<h2/>').css({marginBottom:'0px',marginTop:'1.5rem',display:'inline-block'}).append('<a href="/">Bestillingsweb</a>')
@@ -22,7 +21,7 @@ function uiBooster() {
     $('<b>&nbsp;|</b>')
   );
   $('#navigation > div:last > ul > li:first').remove(); // Removes the vanilla search button, replaced with another one below.
-  $('#navigation > div:first > ul > li:last').remove(); // Removes the "Mangler Fakturanr" button.
+  //$('#navigation > div:first > ul > li:last').remove(); // Removes the "Mangler Fakturanr" button.
   $('#header form')  // Moves the search-field and -button to be inline in the navbar
     .appendTo(
       $('<div>')
@@ -123,6 +122,8 @@ function initDatatable(){
     language: {"url":"//cdn.datatables.net/plug-ins/1.10.20/i18n/Norwegian-Bokmal.json"}, // Adds l10n
     order: [[ database.tableColumns.indexOf('url'), "desc" ]], // Selects the initial ordering of the table
     paging: false, // Defines if paging should be enabled
+    autoWidth: false,
+    searchDelay: 100,
     columns: database.columns,
     columnDefs: [ 
       {
@@ -130,6 +131,7 @@ function initDatatable(){
           "visible": false
       }
     ],
+    //rowId: a=>{return 'id_'+a.url}, // Adds a unique ID to each row
     initComplete: function(){
       emitter.emit('dataTableReady')
     }
@@ -204,7 +206,7 @@ function settingsUpdated() {
  * @param {String} status 
  */
 function filterStatus(status) {
-  
+  $('.chosen-select:last').val([status]).trigger('change').trigger('chosen:updated'); // Run the filter-change.
 }
 
 /**

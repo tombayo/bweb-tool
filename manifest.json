@@ -26,6 +26,7 @@
       "matches": [
         "https://bweb2.nteb.no/*"
       ],
+      "run_at": "document_start",
       "js": [
         "bweb-tool.darkmode.js"
       ]
