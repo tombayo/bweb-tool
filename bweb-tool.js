@@ -74,7 +74,7 @@ function uiBooster() {
  * 
  * @param {Array} columns Array of the columns to add to the table
  */
-function initTable(columns) {
+function initTable() {
   var table = $('<table id="bweb" width="100%" class="compact row-border hover"/>')
   var header = $('<thead/>')
     .css('display','table-row-group') // Styles the head to drop below footer
@@ -83,7 +83,7 @@ function initTable(columns) {
     .css('display','table-header-group') // Puts the footer on top of the table
     .append('<tr/>')
   
-  for (col of columns) {
+  for (col of Workorder.columnsOfTable) {
     header.find('tr').append($('<th/>').html(col.ui))
     footer.find('tr').append('<th>')
   }
@@ -120,14 +120,14 @@ function initDatatable(){
   return table.DataTable({
     stateSave: (typeof(settings.stateSave) == 'undefined') ? false : settings.stateSave, // Enables the state of the filters and sortings to be saved for the next session
     language: {"url":"//cdn.datatables.net/plug-ins/1.10.20/i18n/Norwegian-Bokmal.json"}, // Adds l10n
-    order: [[ database.tableColumns.indexOf('url'), "desc" ]], // Selects the initial ordering of the table
+    order: [[ Workorder.columnNames.indexOf('url'), "desc" ]], // Selects the initial ordering of the table
     paging: false, // Defines if paging should be enabled
     autoWidth: false,
     searchDelay: 100,
-    columns: database.columns,
+    columns: Workorder.columnsOfTable,
     columnDefs: [ 
       {
-          "targets": hiddencols.map(col=>database.tableColumns.indexOf(col)),
+          "targets": hiddencols.map(col=>Workorder.columnNames.indexOf(col)),
           "visible": false
       }
     ],
@@ -216,7 +216,7 @@ function filterStatus(status) {
  */
 function tableLoading() {
   var head = $('#bweb thead')
-  var row = $(`<th colspan="${database.columns.length}">`).css({
+  var row = $(`<th colspan="${Workorder.columnsOfTable.length}">`).css({
     borderBottom:'0',
     letterSpacing:'20px',
     textAlign:'center'
@@ -300,7 +300,7 @@ function backgroundRefresh() {
  * @param {Object} settings 
  */
 function refreshFilters() {
-  var colarr = database.filterColumns // An array of all the columns to apply filter to
+  var colarr = Workorder.columnsToFilter // An array of all the columns to apply filter to
   var applySpecial = (typeof(settings.applySpecial) == 'undefined') ? true : settings.applySpecial
 
   if(applySpecial) {
@@ -386,7 +386,7 @@ function loadSettings() {
 }
 
 function initFilters() {
-  var colarr = database.filterColumns // An array of all the columns to apply filter to
+  var colarr = Workorder.columnsToFilter // An array of all the columns to apply filter to
   var applySpecial = (typeof(settings.applySpecial) == 'undefined') ? true : settings.applySpecial
   
   if (applySpecial) {
@@ -482,10 +482,10 @@ async function DOMReady() {
   })
 }
 
-const settings  = loadSettings() // Loads settings from localstore 
-const database  = new Database().load() // Inits the database and loads data from localstore
-const table     = initTable(database.columns) // Initialize the table to hold our data and to later load DataTables onto
 var   datatable = {} // Prepares our global var for the DataTable, will be initialized later
+var   settings  = {} // Loads settings from localstore 
+const database  = new Database().load() // Inits the database and loads data from localstore
+const table     = initTable() // Initialize the table to hold our data and to later load DataTables onto
 
 const emitter   = new EventEmitter() // Activates eventemitter to allow us to create event-driven workflows
 emitter.addListeners({ // Prepares our custom event listeners
@@ -499,7 +499,8 @@ emitter.addListeners({ // Prepares our custom event listeners
 
 })
 
-Promise.all([ settings , DOMReady() ]).then(()=>{
+Promise.all([ loadSettings() , DOMReady() ]).then((v)=>{
+  settings = v[0] // Value returned from loadSettings() promise is stored in the global var settings
   database.update(parseTablesorterTable($('#oversikt').parent().html())).save() // Update the database with stock table data
   table.insertBefore('#oversikt') // Inserts datatable to DOM
   $('#oversikt').hide()
