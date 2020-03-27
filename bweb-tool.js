@@ -187,7 +187,7 @@ function dataUpdated() {
     if (workorder.rowcolor) {
       row.classList.add(workorder.rowcolor) // Colors the row based on it's rowcolor data
     }
-    row.setAttribute('title', workorder.shortdesc) // Adds the short desc. as a title to the row
+    row.setAttribute('title', (typeof(workorder.description) === 'undefined')?workorder.shortdesc:workorder.description) // Adds the short desc. as a title to the row
   })
 
   $('#filter-unread > span').html(datatable.rows('.rowcolor-orange').count()); // Counts the orange rows and display in menu-button
@@ -274,7 +274,7 @@ function backgroundRefresh() {
         var html = parseTablesorterTable(data)
 
         if (html) { // check if we have a table in the data
-          database.update(html).save() // updates the database and saves it to localstore
+          database.load().update(html).save() // updates the database and saves it to localstore
           emitter.emit('DBupdated') // Informs listeners that the database has been updated
 
           $('#refresh-feedback').html(new Date().toLocaleString() + ' - Oppdatert!').removeClass('bad-txt').addClass('good-txt');
@@ -484,7 +484,8 @@ async function DOMReady() {
 
 var   datatable = {} // Prepares our global var for the DataTable, will be initialized later
 var   settings  = {} // Loads settings from localstore 
-const database  = new Database().load() // Inits the database and loads data from localstore
+let   dbname    = 'bwebDB'+window.location.pathname.replace(/[/]/gi,'') // Prevents using the same database for the archive.
+const database  = new Database(dbname).load() // Inits the database and loads data from localstore
 const table     = initTable() // Initialize the table to hold our data and to later load DataTables onto
 
 const emitter   = new EventEmitter() // Activates eventemitter to allow us to create event-driven workflows
@@ -514,6 +515,6 @@ Promise.all([ loadSettings() , DOMReady() ]).then((v)=>{
   var autorefresh = (typeof(settings.autorefresh) == 'undefined') ? true : settings.autorefresh
   var autorefreshtime = (typeof(settings.autorefreshtime) == 'undefined') ? '10' : settings.autorefreshtime
   if (autorefresh) {
-    setTimeout(()=>backgroundRefresh(), parseInt(autorefreshtime)*60*1000) // Refresh table after 5 mins
+    setInterval(backgroundRefresh, parseInt(autorefreshtime)*60*1000) // Refresh table
   }
 })

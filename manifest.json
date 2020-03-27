@@ -63,6 +63,7 @@
       ],
       "js": [
         "lib/jQuery-3.4.1/jquery-3.4.1.min.js",
+        "bweb-tool.database.js",
         "bweb-tool.workorder.js"
       ]
     },

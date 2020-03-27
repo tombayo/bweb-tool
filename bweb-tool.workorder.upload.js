@@ -59,7 +59,6 @@ function prepMultiFile() {
 }
 
 $(function(){
-  applyDarkmode()
   $('table').first().css({maxWidth:'650px'})
   prepMultiFile()
 })

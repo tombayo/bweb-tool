@@ -86,7 +86,7 @@ class Workorder {
  */
 class Database {
   constructor(dbname  = 'bwebDB') {
-    this.storageName  = `${dbname}_v${chrome.runtime.getManifest().version}_${window.location.pathname.replace(/[/]/gi,'')}`
+    this.storageName  = `${dbname}_v${chrome.runtime.getManifest().version}`
     this.name         = dbname
     this.created      = new Date().toJSON()
     this.data         = {}

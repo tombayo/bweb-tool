@@ -113,9 +113,25 @@ function uiImprovements() {
   $('table').first().css({maxWidth:'650px'})
 }
 
+function scrapeWorkorderTable() {
+  let tbldata = Object.fromEntries([...document.querySelector('table').tBodies[0].rows].map(r => [...r.cells].map(c => c.innerText)).filter(r=>(r.length==2)))
+  let tblmap = {
+    id: tbldata['NTE referanse'].slice(0,tbldata['NTE referanse'].search('-')),
+    tlf: tbldata['Telefon'],
+    email: tbldata['E-post'],
+    customerid: tbldata['Kunde'].split(' ', 1)[0],
+    description: tbldata['Notat:']
+  }
+
+  return tblmap
+}
+
 $(function(){
-  applyDarkmode();
   addAddressUrl();
   addCustomerIdUrl();
   uiImprovements();
+
+  let workorder = scrapeWorkorderTable()
+  console.log('Scraped Workorder:',workorder)
+  let db = new Database().load().update(new Workorder(workorder)).save()
 });
