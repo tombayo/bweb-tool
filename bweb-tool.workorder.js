@@ -116,11 +116,27 @@ function uiImprovements() {
 function scrapeWorkorderTable() {
   let tbldata = Object.fromEntries([...document.querySelector('table').tBodies[0].rows].map(r => [...r.cells].map(c => c.innerText)).filter(r=>(r.length==2)))
   let tblmap = {
-    id: tbldata['NTE referanse'].slice(0,tbldata['NTE referanse'].search('-')),
-    tlf: tbldata['Telefon'],
+    id: tbldata['NTE referanse'].split('-',1)[0],
+    tlf: tbldata['Telefon'].replace(/ /g, ''),
     email: tbldata['E-post'],
     customerid: tbldata['Kunde'].split(' ', 1)[0],
-    description: tbldata['Notat:']
+    description: tbldata['Notat:'],
+    accepteddate: tbldata['Akseptert'],
+    completiondate: tbldata['Ferdigmeldt'],
+    productdesc: tbldata['Produkt:'],
+    locationdesc: tbldata['Beskrivelse av lokasjon'],
+    mapurl: tbldata['Kartserver:'],
+
+    localref: tbldata['Ekstern referanse'],
+    orderdate: tbldata['Registrert'],
+    customer: tbldata['Kunde'].split(' ').slice(1).join(' '),
+    location: tbldata['Poststed'].split(' ').slice(1).join(' '),
+    address: tbldata['Adresse'],
+    contractor: tbldata['Entreprenør:'],
+    technician: document.forms[1].montoer.value,
+    product: tbldata['Produkt:'].split(' ', 1)[0],
+    handler: tbldata['Bestiller'].split(' ').slice(0,-1).join(' '),
+    status: tbldata['Status']
   }
 
   return tblmap
@@ -132,6 +148,8 @@ $(function(){
   uiImprovements();
 
   let workorder = scrapeWorkorderTable()
-  console.log('Scraped Workorder:',workorder)
-  let db = new Database().load().update(new Workorder(workorder)).save()
+  if (workorder.status !== 'Arkivert') {
+    console.log('Scraped Workorder:',workorder)
+    let db = new Database().load().update(new Workorder(workorder)).save()
+  }
 });

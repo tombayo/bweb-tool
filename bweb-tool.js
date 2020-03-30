@@ -183,9 +183,10 @@ function initChosen() {
 function dataUpdated() {
   datatable.rows().every(function(){
     let workorder = this.data()
+    let rowcolor = workorder.rowcolor.replace(/ /g, '')
     let row = this.node()
-    if (workorder.rowcolor) {
-      row.classList.add(workorder.rowcolor) // Colors the row based on it's rowcolor data
+    if (rowcolor) {
+      row.classList.add(rowcolor) // Colors the row based on it's rowcolor data
     }
     row.setAttribute('title', (typeof(workorder.description) === 'undefined')?workorder.shortdesc:workorder.description) // Adds the short desc. as a title to the row
   })
@@ -197,6 +198,7 @@ function dataUpdated() {
  * Extension's settings was updated, lets update the page etc.
  */
 function settingsUpdated() {
+  datatable.state.clear()
   document.location.reload()
 }
 
@@ -468,8 +470,6 @@ function parseTablesorterTable(htmlstring) {
  */
 function updateDatatable() {
   datatable.clear().rows.add(database.toArray(true)).draw() // Feeds the datatable with database data.   
-  dataUpdated() // Data has been added to the table, this triggers more data-handling.
-  refreshFilters() // Refresh the table's filters, Chosen must be initialized
 }
 
 async function DOMReady() {
@@ -484,17 +484,20 @@ async function DOMReady() {
 
 var   datatable = {} // Prepares our global var for the DataTable, will be initialized later
 var   settings  = {} // Loads settings from localstore 
-let   dbname    = 'bwebDB'+window.location.pathname.replace(/[/]/gi,'') // Prevents using the same database for the archive.
+let   dbname    = 'bwebdb'+window.location.pathname.replace(/[/]/gi,'') // Prevents using the same database for the archive.
 const database  = new Database(dbname).load() // Inits the database and loads data from localstore
 const table     = initTable() // Initialize the table to hold our data and to later load DataTables onto
 
 const emitter   = new EventEmitter() // Activates eventemitter to allow us to create event-driven workflows
 emitter.addListeners({ // Prepares our custom event listeners
   dataTableReady: [ // Fires when datatable is ready
+    refreshFilters, // Refresh the table's filters, Chosen must be initialized
     initChosen,
     initFilters
   ],
   DBupdated: [ // Fires when data in the database has been updated
+    refreshFilters,
+    dataUpdated, // Data has been added to the table, this triggers more data-handling.
     updateDatatable
   ],
 
@@ -502,6 +505,7 @@ emitter.addListeners({ // Prepares our custom event listeners
 
 Promise.all([ loadSettings() , DOMReady() ]).then((v)=>{
   settings = v[0] // Value returned from loadSettings() promise is stored in the global var settings
+  console.log(settings)
   database.update(parseTablesorterTable($('#oversikt').parent().html())).save() // Update the database with stock table data
   table.insertBefore('#oversikt') // Inserts datatable to DOM
   $('#oversikt').hide()

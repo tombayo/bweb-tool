@@ -8,7 +8,7 @@ class Workorder {
   static columnsOfTable = [
     { name: 'rowcolor', ui: 'rowcolor', visible: false},
     { name: 'warning', ui: 'Varsel' },
-    { name: 'url', ui: 'NTE ref', render: d=>{return `<a href="/endre/${d}">${d}</a>`}},
+    { name: 'url', ui: 'NTE ref', render: (d,c,o)=>{return `<a href="/endre/${o.id}">${o.id}</a>`}},
     { name: 'localref', ui: 'Ekstern ref' },
     { name: 'orderdate', ui: 'Reg. dato' },
     { name: 'customer', ui: 'Kunde' },
@@ -49,6 +49,8 @@ class Workorder {
       }
     } else {
       if (parseInt(data.id) !== NaN) {
+        // fills missing columnNames with empty data to prevent bugs when Workorder is created outside of main table:
+        Workorder.columnNames.map(v=>this[v] = ' ')
         Object.assign(this, data)
       } else {
         console.log('Couldn\'t create Workorder, invalid ID', data)
@@ -85,8 +87,8 @@ class Workorder {
  * The Database class
  */
 class Database {
-  constructor(dbname  = 'bwebDB') {
-    this.storageName  = `${dbname}_v${chrome.runtime.getManifest().version}`
+  constructor(dbname  = 'bwebdb') {
+    this.storagename  = `${dbname}_v${chrome.runtime.getManifest().version}`
     this.name         = dbname
     this.created      = new Date().toJSON()
     this.data         = {}
@@ -173,7 +175,7 @@ class Database {
    * Saves the database in localStorage
    */
   save() {
-    localStorage.setItem(this.storageName, JSON.stringify(this))
+    localStorage.setItem(this.storagename, JSON.stringify(this).toLowerCase())
 
     return this
   }
@@ -182,7 +184,7 @@ class Database {
    * Loads the database from localStorage
    */
   load() {
-    var data = JSON.parse(localStorage.getItem(this.storageName))
+    var data = JSON.parse(localStorage.getItem(this.storagename))
 
     if (data != null) {
       Object.assign(this, data) // Overwrites with parsed obj from localstore
@@ -198,6 +200,6 @@ class Database {
    * Deletes the database from localStorage
    */
   clear() {
-    localStorage.removeItem(this.storageName)
+    localStorage.removeItem(this.storagename)
   }
 }
