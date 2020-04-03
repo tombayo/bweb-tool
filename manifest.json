@@ -87,6 +87,16 @@
       "css": [
         "bweb-tool.css"
       ]
+    },
+    {
+      "matches": [
+        "https://bweb2.nteb.no/rapport/frister/"
+      ],
+      "js": [
+        "lib/jQuery-3.4.1/jquery-3.4.1.min.js",
+        "bweb-tool.database.js",
+        "bweb-tool.reports.deadlines.js"
+      ]
     }
   ],
   "web_accessible_resources": [

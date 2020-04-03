@@ -133,7 +133,6 @@ function scrapeWorkorderTable() {
     location: tbldata['Poststed'].split(' ').slice(1).join(' '),
     address: tbldata['Adresse'],
     contractor: tbldata['Entreprenør:'],
-    technician: document.forms[1].montoer.value,
     product: tbldata['Produkt:'].split(' ', 1)[0],
     handler: tbldata['Bestiller'].split(' ').slice(0,-1).join(' '),
     status: tbldata['Status']
