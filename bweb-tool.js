@@ -15,14 +15,14 @@ function uiBooster() {
     $('<h2/>').css({marginBottom:'0px',marginTop:'1.5rem',display:'inline-block'}).append('<a href="/">Bestillingsweb</a>')
   ).insertAfter('#header > div:first');
   $('#header > div:last > b:last').hide().next().next().hide(); // removes back link
-  $('#header > div:last > b:last')[0].nextSibling.remove(); // removes search field label
+  //$('#header > div:last > b:last')[0].nextSibling.remove(); // removes search field label
   $('#header > div:last').prepend( // Adds the space for feedbacks
     $('<span id="refresh-feedback">').css({fontStyle:'italic',fontSize:'12px'}),
     $('<b>&nbsp;|</b>')
   );
-  $('#navigation > div:last > ul > li:first').remove(); // Removes the vanilla search button, replaced with another one below.
-  //$('#navigation > div:first > ul > li:last').remove(); // Removes the "Mangler Fakturanr" button.
-  $('#header form')  // Moves the search-field and -button to be inline in the navbar
+  //$('#navigation > div:last > ul > li:first').remove(); // Removes the vanilla search button, replaced with another one below.
+  $('#navigation > div:first > ul > li:last').remove(); // Removes the "Mangler Fakturanr" button.
+  /*$('#header form')  // Moves the search-field and -button to be inline in the navbar
     .appendTo(
       $('<div>')
       .css({float:'right'})
@@ -34,7 +34,7 @@ function uiBooster() {
       .attr('placeholder','Refnr...')
       .attr('title', 'Skriv inn refnr for å gå direkte til ordre.')
       .last()
-        .replaceWith('<button type="submit" class="nav-item">Søk</button>');
+        .replaceWith('<button type="submit" class="nav-item">Søk</button>');*/
   $('#content > span.secret').hide(); // removes row-count at bottom of table
   $('#navigation > div:first').after( // Adds button for refreshing table and sorting by unread comments.
     $('<div>').css({float:'left'}).append(
@@ -59,9 +59,11 @@ function uiBooster() {
     if (window.location.pathname.replace(/[/]/gi, '') === 'arkivert') {
       $(this).attr('href',$(this).attr('href').replace(/[/]/gi, '/#'));
     } else {
-      $(this).attr('href','#').on('click', function(){
-        filterStatus(filter);
-      });
+      if (filter != 'mangler_dokumentasjon') {
+        $(this).attr('href','#').on('click', function(){
+          filterStatus(filter);
+        });
+      }
     }
   });
 }
@@ -420,7 +422,7 @@ function initFilters() {
   // Moves the filter search field to the navbar
   $('#bweb_filter')
     .appendTo('#navigation')
-    .css({float:'right',marginBottom:'0px'})
+    .css({float:'left',marginBottom:'0px'})
     .find('input')
       .addClass('nav-item')
       .height($('li > a').first().height())
@@ -429,7 +431,7 @@ function initFilters() {
       .attr('title', 'Søk i tabellen under.')
       .appendTo('#bweb_filter')
       .siblings('label').remove();
-  $('#bweb_filter').append('<span class="nav-item">'); // Adds some space
+  $('#bweb_filter').prepend('<span class="nav-item">'); // Adds some space
 
   $('#filter-unread').on('click',function(){
     var $btn = $(this);
