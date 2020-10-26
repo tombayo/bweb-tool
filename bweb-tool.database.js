@@ -103,10 +103,9 @@ class Database {
    */
   toArray(workorder = false) {
     var dataarray = []
-    var db = this.data
 
-    for (let i in db) {
-      dataarray.push((workorder)?db[i]:db[i].toArray())
+    for (let i in this.data) {
+      dataarray.push((workorder)?this.data[i]:this.data[i].toArray())
     }
     return dataarray
   }
@@ -202,4 +201,25 @@ class Database {
   clear() {
     localStorage.removeItem(this.storagename)
   }
+
+  /**
+   * Removes old obsolete data from the database
+   */
+  clean() {
+    var DBupdated = new Date(this.updated).getTime()
+    var expiryTime = 30*60*1000 // 30mins
+
+    for (let i in this.data) {
+      if (typeof(this.data[i].updated) != "undefined") {
+        var workorderUpdated = new Date(this.data[i].updated).getTime()
+        
+        if (workorderUpdated+expiryTime < DBupdated) {
+          console.log(i + ' is old, removing...')
+          delete this.data[i]
+          this.save()
+        }
+      }
+    }
+  }
+
 }

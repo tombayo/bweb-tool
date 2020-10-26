@@ -292,6 +292,8 @@ function backgroundRefresh() {
     btnReady('#refresh-btn', 'Oppdater &#8635;');
     $('.loading-slow').hide()
 
+    database.clean() // Removes old entries in the database
+
   })
 }
 
@@ -501,8 +503,7 @@ emitter.addListeners({ // Prepares our custom event listeners
     refreshFilters,
     dataUpdated, // Data has been added to the table, this triggers more data-handling.
     updateDatatable
-  ],
-
+  ]
 })
 
 Promise.all([ loadSettings() , DOMReady() ]).then((v)=>{
@@ -516,7 +517,6 @@ Promise.all([ loadSettings() , DOMReady() ]).then((v)=>{
   
   datatable = initDatatable() // Inits DataTable
   emitter.emit('DBupdated')
-  
   
   var autorefresh = (typeof(settings.autorefresh) == 'undefined') ? true : settings.autorefresh
   var autorefreshtime = (typeof(settings.autorefreshtime) == 'undefined') ? '10' : settings.autorefreshtime
