@@ -288,12 +288,9 @@ function backgroundRefresh() {
       })
     } 
 
-    $('#refresh-feedback').attr('title',$('#refresh-feedback').html());
-    btnReady('#refresh-btn', 'Oppdater &#8635;');
+    $('#refresh-feedback').attr('title',$('#refresh-feedback').html())
+    btnReady('#refresh-btn', 'Oppdater &#8635;')
     $('.loading-slow').hide()
-
-    database.clean() // Removes old entries in the database
-
   })
 }
 
@@ -473,7 +470,8 @@ function parseTablesorterTable(htmlstring) {
  * @param {Database} database
  */
 function updateDatatable() {
-  datatable.clear().rows.add(database.toArray(true)).draw() // Feeds the datatable with database data.   
+  let archived = (window.location.pathname.replace(/[/]/gi,'') == 'arkivert')
+  datatable.clear().rows.add(database.toArray(archived)).draw() // Feeds the datatable with database data.   
 }
 
 async function DOMReady() {
@@ -488,8 +486,7 @@ async function DOMReady() {
 
 var   datatable = {} // Prepares our global var for the DataTable, will be initialized later
 var   settings  = {} // Loads settings from localstore 
-let   dbname    = 'bwebdb'+window.location.pathname.replace(/[/]/gi,'') // Prevents using the same database for the archive.
-const database  = new Database(dbname).load() // Inits the database and loads data from localstore
+const database  = new Database().load() // Inits the database and loads data from localstore
 const table     = initTable() // Initialize the table to hold our data and to later load DataTables onto
 
 const emitter   = new EventEmitter() // Activates eventemitter to allow us to create event-driven workflows
@@ -508,13 +505,13 @@ emitter.addListeners({ // Prepares our custom event listeners
 
 Promise.all([ loadSettings() , DOMReady() ]).then((v)=>{
   settings = v[0] // Value returned from loadSettings() promise is stored in the global var settings
-  console.log(settings)
+  //console.log(settings)
   database.update(parseTablesorterTable($('#oversikt').parent().html())).save() // Update the database with stock table data
   table.insertBefore('#oversikt') // Inserts datatable to DOM
   $('#oversikt').hide()
   uiBooster() // Style and DOM mods
   backgroundRefresh() // Fires a refresh of the table in the background, this is to load the rest of the table.
-  
+
   datatable = initDatatable() // Inits DataTable
   emitter.emit('DBupdated')
   

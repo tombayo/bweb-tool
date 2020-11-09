@@ -73,6 +73,11 @@ class Workorder {
     Object.assign(this, data) // Merge this with new data, overwriting matching props
 
     this.updated = new Date().toJSON()
+
+    // Adds a date to when the workorder was archived:
+    if ((this.status == 'arkivert') && (typeof(this.archivedate) != 'undefined')) {
+      this.archivedate = this.updated
+    }
   }
 
   /**
@@ -99,13 +104,15 @@ class Database {
   /**
    * Converts the database into table data that DataTable understands
    * 
-   * Use DataTable.rows.add(dataarray).draw() to add and update the table.
+   * @argument archived Used to dump the archived data from DB.
    */
-  toArray(workorder = false) {
+  toArray(archived = false) {
     var dataarray = []
 
     for (let i in this.data) {
-      dataarray.push((workorder)?this.data[i]:this.data[i].toArray())
+      if ((this.data[i].status == 'arkivert') == (archived)) {
+        dataarray.push(this.data[i])
+      }
     }
     return dataarray
   }
@@ -160,9 +167,8 @@ class Database {
       if (typeof(this.overwrites) !== 'undefined') {
         this.update(this.overwrites) // Overwrites the newly refreshed data with custom data
       }
-
       this.updated = new Date().toJSON()
-
+      //this.clean()
     } catch (error) {
       console.log('Error updating data: ', error.message, data)
     }
@@ -208,18 +214,19 @@ class Database {
   clean() {
     var DBupdated = new Date(this.updated).getTime()
     var expiryTime = 30*60*1000 // 30mins
+    var expiredWOs = []
 
     for (let i in this.data) {
       if (typeof(this.data[i].updated) != "undefined") {
         var workorderUpdated = new Date(this.data[i].updated).getTime()
-        
         if (workorderUpdated+expiryTime < DBupdated) {
-          console.log(i + ' is old, removing...')
-          delete this.data[i]
-          this.save()
+          if (typeof(this.data[i].archivedate) != 'undefined') {
+            console.log(i + ' is old, possibly archived?')
+            expiredWOs.push(this.data[i])
+          }
         }
       }
     }
+    return expiredWOs
   }
-
 }

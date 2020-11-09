@@ -147,8 +147,6 @@ $(function(){
   uiImprovements();
 
   let workorder = scrapeWorkorderTable()
-  if (workorder.status !== 'Arkivert') {
-    console.log('Scraped Workorder:',workorder)
-    let db = new Database().load().update(new Workorder(workorder)).save()
-  }
+  console.log('Scraped Workorder:',workorder)
+  db = new Database().load().update(new Workorder(workorder)).save()
 });

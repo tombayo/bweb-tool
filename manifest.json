@@ -34,7 +34,6 @@
     {
       "matches": [
         "https://bweb2.nteb.no/",
-        "https://bweb2.nteb.no/mangler_dokumentasjon/",
         "https://bweb2.nteb.no/arkivert/"
       ],
       "run_at": "document_start",
