@@ -238,6 +238,25 @@ function tableLoading() {
 }
 
 /**
+ * Toggles the UI into, or out of loading state.
+ * 
+ * @param {Boolean} forceState Use to force a loading state on the UI
+ */
+function uiLoading(forceState) {
+  loadingState = (typeof(loadingState) == "undefined")?true:loadingState // State not defined, starts with false
+  loadingState = (typeof(forceState) == "undefined")?!loadingState:forceState // Toggle loadingState, or override by param
+  if (loadingState) {
+    btnLoad('#refresh-btn', 'Oppdaterer');
+    $('#refresh-feedback').html('Venter på server...').attr('title',''); // clears the feedback-area
+    $('.loading-slow').show()
+  } else {
+    $('#refresh-feedback').attr('title',$('#refresh-feedback').html())
+    btnReady('#refresh-btn', 'Oppdater &#8635;')
+    $('.loading-slow').hide()
+  }
+}
+
+/**
  * Function that performs the ajax call to the current href.
  *  
  */
@@ -261,10 +280,7 @@ async function ajaxRefresh() {
  * Loads the full table in background and refreshes the visible content.
  */
 function backgroundRefresh() {
-  btnLoad('#refresh-btn', 'Oppdaterer');
-  $('#refresh-feedback').html('Venter på server...').attr('title',''); // clears the feedback-area
-  $('.loading-slow').show()
-
+  uiLoading()  
   ajaxRefresh().then((response) => {
     if (response.status !== 200) { // Something went wrong
       console.log('AjaxStatus:', response.status);
@@ -286,11 +302,7 @@ function backgroundRefresh() {
           $('#refresh-feedback').html(new Date().toLocaleString() + ' - Det ser ut som at du har blitt logget ut, last inn siden på nytt og prøv igjen...').addClass('bad-txt');
         }
       })
-    } 
-
-    $('#refresh-feedback').attr('title',$('#refresh-feedback').html())
-    btnReady('#refresh-btn', 'Oppdater &#8635;')
-    $('.loading-slow').hide()
+    }
   })
 }
 
@@ -497,6 +509,7 @@ emitter.addListeners({ // Prepares our custom event listeners
     initFilters
   ],
   DBupdated: [ // Fires when data in the database has been updated
+    uiLoading,
     refreshFilters,
     dataUpdated, // Data has been added to the table, this triggers more data-handling.
     updateDatatable
