@@ -44,6 +44,9 @@ class Workorder {
       this.created    = new Date().toJSON()
       if (data.length === Workorder.columnsOfTable.length) {
         Object.assign(this, ...Workorder.columnNames.map((k,i) => ({[k]: data[i]})))
+
+        // Adds an archived date on Workorders that are already archived:
+        this.archivedate = (this.status == 'arkivert')?this.created:undefined
       } else {
         console.log('Couldn\'t create Workorder, invalid data/columns length', data, Workorder.columnsOfTable)
       }
@@ -52,6 +55,10 @@ class Workorder {
         // fills missing columnNames with empty data to prevent bugs when Workorder is created outside of main table:
         Workorder.columnNames.map(v=>this[v] = ' ')
         Object.assign(this, data)
+        // Adds a date to when the workorder was archived:
+        if ((this.status == 'arkivert') && (typeof(this.archivedate) != 'undefined')) {
+          this.archivedate = (typeof(this.updated) != 'undefined')?this.updated:this.created
+        }
       } else {
         console.log('Couldn\'t create Workorder, invalid ID', data)
       }
@@ -110,7 +117,7 @@ class Database {
     var dataarray = []
 
     for (let i in this.data) {
-      if ((this.data[i].status == 'arkivert') == (archived)) {
+      if ((typeof(this.data[i].archivedate) != 'undefined') == (archived)) {
         dataarray.push(this.data[i])
       }
     }
@@ -213,14 +220,14 @@ class Database {
    */
   clean() {
     var DBupdated = new Date(this.updated).getTime()
-    var expiryTime = 30*60*1000 // 30mins
+    var expiryTime = 24*60*60*1000 // 1 day
     var expiredWOs = []
 
     for (let i in this.data) {
       if (typeof(this.data[i].updated) != "undefined") {
         var workorderUpdated = new Date(this.data[i].updated).getTime()
         if (workorderUpdated+expiryTime < DBupdated) {
-          if (typeof(this.data[i].archivedate) != 'undefined') {
+          if (typeof(this.data[i].archivedate) == 'undefined') {
             console.log(i + ' is old, possibly archived?')
             expiredWOs.push(this.data[i])
           }

@@ -56,14 +56,12 @@ function uiBooster() {
    */ 
   $('#navigation > div:first a').each(function() {
     var filter = $(this).attr('href').replace(/[^\w\s]/gi, '');
-    if (window.location.pathname.replace(/[/]/gi, '') === 'arkivert') {
-      $(this).attr('href',$(this).attr('href').replace(/[/]/gi, '/#'));
-    } else {
-      if (filter != 'mangler_dokumentasjon') {
-        $(this).attr('href','#').on('click', function(){
-          filterStatus(filter);
-        });
-      }
+    if (filter != 'mangler_dokumentasjon') {
+      $(this).hide()
+      /*
+      $(this).attr('href','#').on('click', function(){
+        filterStatus(filter);
+      });*/
     }
   });
 }
