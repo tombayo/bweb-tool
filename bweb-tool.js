@@ -115,7 +115,7 @@ function rawHTMLfix(string) {
  */
 function initDatatable(){
   $.fn.dataTable.moment('DD.MM.YYYY HH:mm'); // Prepare Moment.js for sorting datetime
-  var hiddencols = (typeof(settings.hiddenCols) == 'undefined') ? ['shortdesc','contractor'] : settings.hiddenCols
+  var hiddencols = (typeof(settings.hiddenCols) == 'undefined') ? ["warning",'shortdesc','contractor'] : settings.hiddenCols
 
   return table.DataTable({
     stateSave: (typeof(settings.stateSave) == 'undefined') ? false : settings.stateSave, // Enables the state of the filters and sortings to be saved for the next session
