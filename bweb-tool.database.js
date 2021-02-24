@@ -55,9 +55,9 @@ class Workorder {
         // fills missing columnNames with empty data to prevent bugs when Workorder is created outside of main table:
         Workorder.columnNames.map(v=>this[v] = ' ')
         Object.assign(this, data)
-        // Adds a date to when the workorder was archived:
-        if ((this.status == 'arkivert') && (typeof(this.archivedate) != 'undefined')) {
-          this.archivedate = (typeof(this.updated) != 'undefined')?this.updated:this.created
+        // Adds a date of when the workorder was discovered to be archived:
+        if ((this.status.toLowerCase() == 'arkivert') && (typeof(this.archivedate) == 'undefined')) {
+          this.archivedate = this.updated ?? this.created
         }
       } else {
         console.log('Couldn\'t create Workorder, invalid ID', data)
@@ -73,18 +73,25 @@ class Workorder {
     // Remove props we dont want to overwrite:
     delete data.id // No need to overwrite id
     delete data.created // Preserve object creation date
+    delete data.archivedate // Preserve archived date
     delete data.columnsToFilter
     delete data.columnNames
     delete data.columnsOfTable
+
+    /*
+      Below code remove props that are empty, we dont need to overwrite those.
+      If prop should stay empty, it should already be empty due to
+      filling missing columnNames with empty data in constructor.
+      @see this.constructor
+    */
+    for (let i in data) {
+      if (data[i] === " ") delete data[i]
+    }
 
     Object.assign(this, data) // Merge this with new data, overwriting matching props
 
     this.updated = new Date().toJSON()
 
-    // Adds a date to when the workorder was archived:
-    if ((this.status == 'arkivert') && (typeof(this.archivedate) != 'undefined')) {
-      this.archivedate = this.updated
-    }
   }
 
   /**
