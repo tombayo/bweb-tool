@@ -195,6 +195,15 @@ function dataUpdated() {
 }
 
 /**
+ * Cleans the database by archiving old entries.
+ */
+function dbClean() {
+  setTimeout(function(){
+    database.clean().save()
+  },5000) // Runs the cleanup after 5 seconds.
+}
+
+/**
  * Extension's settings was updated, lets update the page etc.
  */
 function settingsUpdated() {
@@ -507,6 +516,7 @@ emitter.addListeners({ // Prepares our custom event listeners
     initFilters
   ],
   DBupdated: [ // Fires when data in the database has been updated
+    dbClean,
     uiLoading,
     refreshFilters,
     dataUpdated, // Data has been added to the table, this triggers more data-handling.

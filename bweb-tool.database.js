@@ -223,24 +223,30 @@ class Database {
   }
 
   /**
-   * Removes old obsolete data from the database
+   * Archives old data from the database
    */
   clean() {
     var DBupdated = new Date(this.updated).getTime()
     var expiryTime = 24*60*60*1000 // 1 day
-    var expiredWOs = []
 
     for (let i in this.data) {
-      if (typeof(this.data[i].updated) != "undefined") {
-        var workorderUpdated = new Date(this.data[i].updated).getTime()
-        if (workorderUpdated+expiryTime < DBupdated) {
-          if (typeof(this.data[i].archivedate) == 'undefined') {
-            console.log(i + ' is old, possibly archived?')
-            expiredWOs.push(this.data[i])
+      if (typeof(this.data[i].archivedate) == 'undefined') { // check if already archived
+        if (typeof(this.data[i].updated) != "undefined") { // check if ever updated
+          var woUpdated = new Date(this.data[i].updated).getTime()
+          if (woUpdated+expiryTime < DBupdated) { // Workorder hasnt been updated in a while compared to DB    
+            console.log(i + ' is old, archiving...')
+            this.data[i].archivedate = this.data[i].updated
           }
-        }
+        } else { // workorder has never been updated
+          var woCreated = new Date(this.data[i].created).getTime()
+          if (woCreated+expiryTime < DBupdated) { // Workorder created a while ago but not updated
+            console.log(i + ' has never been updated, archive?')
+            //this.data[i].archivedate = this.data[i].updated
+          }
+        } 
       }
     }
-    return expiredWOs
+
+    return this
   }
 }
