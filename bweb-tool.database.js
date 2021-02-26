@@ -55,6 +55,9 @@ class Workorder {
         // fills missing columnNames with empty data to prevent bugs when Workorder is created outside of main table:
         Workorder.columnNames.map(v=>this[v] = ' ')
         Object.assign(this, data)
+
+        this.created = data.created ?? new Date().toJSON() // Applies a created date if missing.
+
         // Adds a date of when the workorder was discovered to be archived:
         if ((this.status.toLowerCase() == 'arkivert') && (typeof(this.archivedate) == 'undefined')) {
           this.archivedate = this.updated ?? this.created
