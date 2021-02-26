@@ -234,19 +234,12 @@ class Database {
 
     for (let i in this.data) {
       if (typeof(this.data[i].archivedate) == 'undefined') { // check if already archived
-        if (typeof(this.data[i].updated) != "undefined") { // check if ever updated
-          var woUpdated = new Date(this.data[i].updated).getTime()
-          if (woUpdated+expiryTime < DBupdated) { // Workorder hasnt been updated in a while compared to DB    
-            console.log(i + ' is old, archiving...')
-            this.data[i].archivedate = this.data[i].updated
-          }
-        } else { // workorder has never been updated
-          var woCreated = new Date(this.data[i].created).getTime()
-          if (woCreated+expiryTime < DBupdated) { // Workorder created a while ago but not updated
-            console.log(i + ' has never been updated, archive?')
-            //this.data[i].archivedate = this.data[i].updated
-          }
-        } 
+        let woDate = this.data[i].updated ?? this.data[i].created
+        let woTimestamp = new Date(woDate).getTime()
+        if (woTimestamp+expiryTime < DBupdated) { // Workorder hasnt been updated in a while compared to DB
+          console.log(i + ' is old, archiving...')
+          this.data[i].archivedate = new Date().toJSON()
+        }
       }
     }
 
