@@ -39,7 +39,6 @@
       "run_at": "document_start",
       "js": [
         "lib/jQuery-3.4.1/jquery-3.4.1.min.js",
-        "lib/EventEmitter-5.2.8/EventEmitter.min.js",
         "lib/DataTables-1.10.20/js/jquery.dataTables.min.js",
         "lib/Chosen-1.8.7/chosen.jquery.min.js",
         "lib/Moment-2.24.0/moment.min.js",

@@ -39,7 +39,7 @@ class Workorder {
    * @param {Integer} id ID of array data
    */
   constructor(data,id) {
-    if (Array.isArray(data)) {
+    if (Array.isArray(data) && id) {
       this.id         = id
       this.created    = new Date().toJSON()
       if (data.length === Workorder.columnsOfTable.length) {
@@ -83,7 +83,7 @@ class Workorder {
 
     /*
       Below code remove props that are empty, we dont need to overwrite those.
-      If prop should stay empty, it should already be empty due to
+      If prop should stay empty, it would already be empty due to
       filling missing columnNames with empty data in constructor.
       @see this.constructor
     */
@@ -108,12 +108,14 @@ class Workorder {
 /**
  * The Database class
  */
-class Database {
+class Database extends EventTarget {
   constructor(dbname  = 'bwebdb') {
+    super()
     this.storagename  = `${dbname}_v${chrome.runtime.getManifest().version}`
     this.name         = dbname
     this.created      = new Date().toJSON()
     this.data         = {}
+    this.updateEvent  = new CustomEvent('update')
 
     return this
   }
@@ -157,7 +159,7 @@ class Database {
   update(data) {
     try {
       if (data instanceof Workorder) { // Single entry
-        if (typeof(this.data[data.id]) === 'undefined') {
+        if (typeof(this.data[data.id]) === 'undefined') {// Do this database already have this id?
           this.data[data.id] = data
         } else {
           this.data[data.id].update(data)
@@ -166,26 +168,12 @@ class Database {
         this.update(new Database().fromArray(data))
       } else if (data instanceof Database) { // Another Database 
         for (let i in data.data) {
-          let row = data.data[i]
-
-          if (typeof(row.id) === 'undefined') throw new Error('Wrong data fed to update(), missing property "id" in row')
-
-          if (typeof(this.data[row.id]) === 'undefined') { // Do this database already have this id?
-            this.update(new Workorder(row, row.id))
-          } else {            
-            this.update(row) // update Workorder entry with new data
-          }
-
+          this.update(data.data[i]) // update Workorder entry with new data
         }
       } else {
         throw new Error('Wrong data fed to update(), unknown type')
       }
-
-      if (typeof(this.overwrites) !== 'undefined') {
-        this.update(this.overwrites) // Overwrites the newly refreshed data with custom data
-      }
-      this.updated = new Date().toJSON()
-      //this.clean()
+      
     } catch (error) {
       console.log('Error updating data: ', error.message, data)
     }
@@ -197,6 +185,9 @@ class Database {
    * Saves the database in localStorage
    */
   save() {
+    this.updated = new Date().toJSON()
+    this.dispatchEvent(this.updateEvent)
+
     localStorage.setItem(this.storagename, JSON.stringify(this).toLowerCase())
 
     return this

@@ -83,7 +83,7 @@ function convertToKartserverUrl(str, postnr) {
  */
 function addAddressUrl() {
   var address = $('td:contains(Adresse)').first().next().html();
-  var postnr = $('td:contains(Poststed)').first().next().html().split(' ')[0];
+  var postnr = $('td:contains(Poststed)').first().next().html()?.split(' ')[0];
   var url = convertToKartserverUrl(address,postnr);
   if (url) {
     $('td:contains(Adresse)').first().next().html(

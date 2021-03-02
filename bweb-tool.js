@@ -112,8 +112,10 @@ function rawHTMLfix(string) {
 
 /**
  * Sets up DataTable on #bweb
+ * 
+ * @argument callback function to run when init is complete
  */
-function initDatatable(){
+function initDatatable(callback){
   $.fn.dataTable.moment('DD.MM.YYYY HH:mm'); // Prepare Moment.js for sorting datetime
   var hiddencols = (typeof(settings.hiddenCols) == 'undefined') ? ["warning",'shortdesc','contractor'] : settings.hiddenCols
 
@@ -132,9 +134,7 @@ function initDatatable(){
       }
     ],
     //rowId: a=>{return 'id_'+a.url}, // Adds a unique ID to each row
-    initComplete: function(){
-      emitter.emit('dataTableReady')
-    }
+    initComplete: callback
   })
 }
 
@@ -192,15 +192,6 @@ function dataUpdated() {
   })
 
   $('#filter-unread > span').html(datatable.rows('.rowcolor-orange').count()); // Counts the orange rows and display in menu-button
-}
-
-/**
- * Cleans the database by archiving old entries.
- */
-function dbClean() {
-  setTimeout(function(){
-    database.clean().save()
-  },5000) // Runs the cleanup after 5 seconds.
 }
 
 /**
@@ -301,8 +292,7 @@ function backgroundRefresh() {
         var html = parseTablesorterTable(data)
 
         if (html) { // check if we have a table in the data
-          database.load().update(html).save() // updates the database and saves it to localstore
-          emitter.emit('DBupdated') // Informs listeners that the database has been updated
+          database.load().update(html).clean().save() // updates the database, cleans it for old stuff, and saves it to localstore
 
           $('#refresh-feedback').html(new Date().toLocaleString() + ' - Oppdatert!').removeClass('bad-txt').addClass('good-txt');
         } else { // No table usually means logged out user
@@ -508,33 +498,30 @@ var   settings  = {} // Loads settings from localstore
 const database  = new Database().load() // Inits the database and loads data from localstore
 const table     = initTable() // Initialize the table to hold our data and to later load DataTables onto
 
-const emitter   = new EventEmitter() // Activates eventemitter to allow us to create event-driven workflows
-emitter.addListeners({ // Prepares our custom event listeners
-  dataTableReady: [ // Fires when datatable is ready
-    refreshFilters, // Refresh the table's filters, Chosen must be initialized
-    initChosen,
-    initFilters
-  ],
-  DBupdated: [ // Fires when data in the database has been updated
-    dbClean,
-    uiLoading,
-    refreshFilters,
-    dataUpdated, // Data has been added to the table, this triggers more data-handling.
-    updateDatatable
-  ]
+database.addEventListener('update',()=>{ // Listens for an update to the DB to update visuals
+  updateDatatable()
+  dataUpdated() // Data has been added to the table, this triggers more data-handling.
+  refreshFilters()
+  uiLoading()
 })
+
 
 Promise.all([ loadSettings() , DOMReady() ]).then((v)=>{
   settings = v[0] // Value returned from loadSettings() promise is stored in the global var settings
-  //console.log(settings)
-  database.update(parseTablesorterTable($('#oversikt').parent().html())).save() // Update the database with stock table data
+
+  let html = parseTablesorterTable($('#oversikt').hide().parent().html())
+
   table.insertBefore('#oversikt') // Inserts datatable to DOM
-  $('#oversikt').hide()
   uiBooster() // Style and DOM mods
   backgroundRefresh() // Fires a refresh of the table in the background, this is to load the rest of the table.
 
-  datatable = initDatatable() // Inits DataTable
-  emitter.emit('DBupdated')
+  datatable = initDatatable(()=>{ // Inits DataTable
+    initFilters()
+    initChosen()
+    refreshFilters() // Refresh the table's filters, Chosen must be initialized first
+  })
+
+  database.update(html).save() // Update the database with stock table data
   
   var autorefresh = (typeof(settings.autorefresh) == 'undefined') ? true : settings.autorefresh
   var autorefreshtime = (typeof(settings.autorefreshtime) == 'undefined') ? '10' : settings.autorefreshtime
