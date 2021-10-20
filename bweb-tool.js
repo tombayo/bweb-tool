@@ -9,7 +9,7 @@
  */
 function uiBooster() {
   $('#content > h2').hide(); // Hides the standard heading
-  $('#content > form').hide(); // Hides the horrible "filter" form
+  $('#content > form').hide(); // Hides the vanilla "filter" form
   $('#header span').first().hide(); // Removes the link "Hovedside", which is the same as the heading-link
   $('<div style="float:left"/>').append( // Creates a new Heading with link placed above navigation menu.
     $('<h2/>').css({marginBottom:'0px',marginTop:'1.5rem',display:'inline-block'}).append('<a href="/">Bestillingsweb</a>')
@@ -292,7 +292,7 @@ function backgroundRefresh() {
         var html = parseTablesorterTable(data)
 
         if (html) { // check if we have a table in the data
-          database.load().update(html).clean().save() // updates the database, cleans it for old stuff, and saves it to localstore
+          database.update(html).clean().save() // updates the database, cleans it for old stuff, and saves it to localstore
 
           $('#refresh-feedback').html(new Date().toLocaleString() + ' - Oppdatert!').removeClass('bad-txt').addClass('good-txt');
         } else { // No table usually means logged out user
@@ -495,19 +495,20 @@ async function DOMReady() {
 
 var   datatable = {} // Prepares our global var for the DataTable, will be initialized later
 var   settings  = {} // Loads settings from localstore 
-const database  = new Database().load() // Inits the database and loads data from localstore
+var   database  = {} // Inits the database and loads data from localstore
 const table     = initTable() // Initialize the table to hold our data and to later load DataTables onto
 
-database.addEventListener('update',()=>{ // Listens for an update to the DB to update visuals
-  updateDatatable()
-  dataUpdated() // Data has been added to the table, this triggers more data-handling.
-  refreshFilters()
-  uiLoading()
-})
 
+Promise.all([ loadSettings(), (new Database().load()) , DOMReady()]).then((v)=>{
+  settings = v[0] // Value returned from loadSettings()-promise is stored in the global var settings
+  database = v[1] // Value returned from Database().load()-promise
 
-Promise.all([ loadSettings() , DOMReady() ]).then((v)=>{
-  settings = v[0] // Value returned from loadSettings() promise is stored in the global var settings
+  database.addEventListener('update',()=>{ // Listens for an update to the DB to update visuals
+    updateDatatable()
+    dataUpdated() // Data has been added to the table, this triggers more data-handling.
+    refreshFilters()
+    uiLoading()
+  })
 
   let html = parseTablesorterTable($('#oversikt').hide().parent().html())
 

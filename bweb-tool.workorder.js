@@ -126,6 +126,7 @@ function scrapeWorkorderTable() {
     productdesc: tbldata['Produkt:'],
     locationdesc: tbldata['Beskrivelse av lokasjon'],
     mapurl: tbldata['Kartserver:'],
+    duedate: tbldata['Oppkoblingsfrist'],
 
     localref: tbldata['Ekstern referanse'],
     orderdate: tbldata['Registrert'],

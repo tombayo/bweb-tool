@@ -2,9 +2,10 @@ body, #header,.header, th, h2, #container, #navigation, #footer, #bweb_info, tab
   background-color: #252525 !important;
   color: #ccc !important;
 }
+/*
 #header img:first-of-type {
   content:url("https://nte.no/_/asset/no.smartlabs.nte:1581893708/dist/images/nte-logo.svg");
-}
+}*/
 #bweb td {
   border-top: 1px solid rgb(90, 90, 90);
 }

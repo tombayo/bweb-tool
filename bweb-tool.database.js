@@ -22,6 +22,12 @@ class Workorder {
     { name: 'handler', ui: 'Bestilt av', applyFilter: true},
     { name: 'status', ui: 'Status', applyFilter: true}
   ].map(col=>Object.assign(col,{data:col.name})) // Duplicates the name prop to a new data prop
+
+  /**
+   * @static columnsOfRawHTML An array that matches the columns of the Raw HTML table scraped off the website.
+   */
+  static columnsOfRawHTML = this.columnsOfTable.filter(col => typeof(col.extended) === 'undefined')
+  static columnsOfRawHTMLnames = this.columnsOfRawHTML.map(col=>col.name)
   /**
    * @static columnNames An array of all the column names
    */
@@ -30,6 +36,7 @@ class Workorder {
    * @static columnsToFilter An array of all the columns that we want to apply a filter tool to.
    */
   static columnsToFilter = this.columnsOfTable.filter(col => typeof(col.applyFilter) !== 'undefined').map(col=>col.name+':name')
+
   /**
    * Creates a new workorder with data from an array or object
    * 
@@ -42,8 +49,8 @@ class Workorder {
     if (Array.isArray(data) && id) {
       this.id         = id
       this.created    = new Date().toJSON()
-      if (data.length === Workorder.columnsOfTable.length) {
-        Object.assign(this, ...Workorder.columnNames.map((k,i) => ({[k]: data[i]})))
+      if (data.length === Workorder.columnsOfRawHTML.length) {
+        Object.assign(this, ...Workorder.columnsOfRawHTMLnames.map((k,i) => ({[k]: data[i]})))
 
         // Adds an archived date on Workorders that are already archived:
         this.archivedate = (this.status == 'arkivert')?this.created:undefined
@@ -80,6 +87,8 @@ class Workorder {
     delete data.columnsToFilter
     delete data.columnNames
     delete data.columnsOfTable
+    delete data.columnsOfRawHTML
+    delete data.columnsOfRawHTMLnames
 
     /*
       Below code remove props that are empty, we dont need to overwrite those.
@@ -182,31 +191,41 @@ class Database extends EventTarget {
   }
 
   /**
-   * Saves the database in localStorage
+   * Saves the database in chrome local storage
    */
   save() {
-    this.updated = new Date().toJSON()
-    this.dispatchEvent(this.updateEvent)
+    return new Promise((resolve,reject) => {
+      this.updated = new Date().toJSON()
+      this.dispatchEvent(this.updateEvent)
 
-    localStorage.setItem(this.storagename, JSON.stringify(this).toLowerCase())
-
-    return this
+      chrome.storage.local.set({[this.name]: JSON.stringify(this)}, (response) => {
+        resolve(this)
+      })
+    })
   }
 
   /**
-   * Loads the database from localStorage
+   * Loads the database from chrome local storage
    */
   load() {
-    var data = JSON.parse(localStorage.getItem(this.storagename))
+    return new Promise((resolve,reject) => {
+      chrome.storage.local.get(this.name, (response) => {
+        var data = null
 
-    if (data != null) {
-      Object.assign(this, data) // Overwrites with parsed obj from localstore
-      for (let i in this.data) { // Data in DB is in general object form, convert to Workorder
-        this.data[i] = new Workorder(this.data[i]) 
-      }
-    }
+        if (typeof(response) == 'string') {
+          data = JSON.parse(response)
+        }
 
-    return this
+        if (data != null) {
+          Object.assign(this, response) // Overwrites with parsed obj from localstore
+          for (let i in this.data) { // Data in DB is in general object form, convert to Workorder
+            this.data[i] = new Workorder(this.data[i]) 
+          }
+        }
+
+        resolve(this)
+      })
+    })
   }
 
   /**
