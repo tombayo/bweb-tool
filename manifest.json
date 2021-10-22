@@ -58,6 +58,7 @@
       "matches": [
         "https://bweb2.nteb.no/endre/*"
       ],
+      "run_at": "document_start",
       "js": [
         "lib/jQuery-3.4.1/jquery-3.4.1.min.js",
         "bweb-tool.database.js",
@@ -89,6 +90,7 @@
       "matches": [
         "https://bweb2.nteb.no/rapport/frister/"
       ],
+      "run_at": "document_start",
       "js": [
         "lib/jQuery-3.4.1/jquery-3.4.1.min.js",
         "bweb-tool.database.js",

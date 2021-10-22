@@ -195,9 +195,11 @@ class Database extends EventTarget {
    */
   save() {
       this.updated = new Date().toJSON()
-      this.dispatchEvent(this.updateEvent)
 
-      chrome.storage.local.set({[this.name]: JSON.stringify(this)}, ()=>{})
+      chrome.storage.local.set({[this.name]: JSON.stringify(this).toLowerCase()}, (r)=>{
+        this.dispatchEvent(this.updateEvent)
+        console.log('DB saved..')
+      })
   }
 
   /**
@@ -208,15 +210,18 @@ class Database extends EventTarget {
       chrome.storage.local.get(this.name, (response) => {
         var data = null
 
-        if (typeof(response) == 'string') {
-          data = JSON.parse(response)
-        }
+        if (typeof(response[this.name]) == 'string') {
+          data = JSON.parse(response[this.name])
+        } 
 
         if (data != null) {
-          Object.assign(this, response) // Overwrites with parsed obj from localstore
+          Object.assign(this, data) // Overwrites with parsed obj from localstore
           for (let i in this.data) { // Data in DB is in general object form, convert to Workorder
             this.data[i] = new Workorder(this.data[i]) 
           }
+          console.log('DB loaded..')
+        } else {
+          console.log(`Couldn't parse JSON from storage.`)
         }
 
         resolve(this)
@@ -225,10 +230,11 @@ class Database extends EventTarget {
   }
 
   /**
-   * Deletes the database from localStorage
+   * Deletes the database from chrome storage
    */
   clear() {
-    localStorage.removeItem(this.storagename)
+    chrome.storage.local.clear()
+    console.log('Storage cleared..')
   }
 
   /**

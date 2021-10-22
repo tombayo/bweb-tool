@@ -50,7 +50,7 @@ function scrapeWorkorderTable() {
     productdesc: tbldata['Produkt:'],
     locationdesc: tbldata['Beskrivelse av lokasjon'],
     mapurl: tbldata['Kartserver:'],
-    duedate: tbldata['Oppkoblingsfrist'],
+    duedate: tbldata['Oppkoblingsfrist'] ?? '',
 
     localref: tbldata['Ekstern referanse'],
     orderdate: tbldata['Registrert'],
@@ -68,8 +68,8 @@ function scrapeWorkorderTable() {
 
 var database = {}
 
-Promise.all([new Database().load(),DOMReady()]).then((val)=>{
-  database = val[0]
+Promise.all([ new Database().load() , DOMReady() ]).then((v)=>{
+  database = v[0]
   addAddressUrl()
   addCustomerIdUrl()
   uiImprovements()
@@ -77,4 +77,4 @@ Promise.all([new Database().load(),DOMReady()]).then((val)=>{
   let workorder = scrapeWorkorderTable()
   console.log('Scraped Workorder:',workorder)
   database.update(new Workorder(workorder)).save()
-});
+})
