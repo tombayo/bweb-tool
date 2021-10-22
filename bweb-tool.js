@@ -383,20 +383,6 @@ function refreshMunicipalityFilter(column) {
   sel.trigger("chosen:updated");
 }
 
-function mapReverseLookup(objmap, search) {
-  return Object.entries(objmap).filter(function (pair){
-    return pair[1] == search;
-  });
-}
-
-function loadSettings() {
-  return new Promise((resolve,reject) => {
-    chrome.storage.sync.get((response) => {
-      resolve(response)
-    })
-  })
-}
-
 function initFilters() {
   var colarr = Workorder.columnsToFilter // An array of all the columns to apply filter to
   var applySpecial = (typeof(settings.applySpecial) == 'undefined') ? true : settings.applySpecial
@@ -483,23 +469,13 @@ function updateDatatable() {
   datatable.clear().rows.add(database.toArray(archived)).draw() // Feeds the datatable with database data.   
 }
 
-async function DOMReady() {
-  return new Promise((resolve,reject)=>{
-    if (document.readyState === 'complete') {
-      resolve(document)
-    } else {
-      document.addEventListener('DOMContentLoaded',()=>resolve(document))
-    }
-  })
-}
-
 var   datatable = {} // Prepares our global var for the DataTable, will be initialized later
 var   settings  = {} // Loads settings from localstore 
 var   database  = {} // Inits the database and loads data from localstore
 const table     = initTable() // Initialize the table to hold our data and to later load DataTables onto
 
 
-Promise.all([ loadSettings(), (new Database().load()) , DOMReady()]).then((v)=>{
+Promise.all([ loadSettings(), new Database().load() , DOMReady()]).then((v)=>{
   settings = v[0] // Value returned from loadSettings()-promise is stored in the global var settings
   database = v[1] // Value returned from Database().load()-promise
 

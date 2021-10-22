@@ -194,14 +194,10 @@ class Database extends EventTarget {
    * Saves the database in chrome local storage
    */
   save() {
-    return new Promise((resolve,reject) => {
       this.updated = new Date().toJSON()
       this.dispatchEvent(this.updateEvent)
 
-      chrome.storage.local.set({[this.name]: JSON.stringify(this)}, (response) => {
-        resolve(this)
-      })
-    })
+      chrome.storage.local.set({[this.name]: JSON.stringify(this)}, ()=>{})
   }
 
   /**

@@ -28,7 +28,8 @@
       ],
       "run_at": "document_start",
       "js": [
-        "bweb-tool.darkmode.js"
+        "bweb-tool.darkmode.js",
+        "bweb-tool.lib.js"
       ]
     },
     {

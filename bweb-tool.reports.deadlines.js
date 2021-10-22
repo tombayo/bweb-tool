@@ -1,7 +1,10 @@
-var database = new Database().load()
+/**
+ * Adds a column with addresses to the table.
+ */
 
-$(function(){
+Promise.all([(new Database().load()),DOMReady()]).then((val)=>{
   //var tblarray =  [...document.querySelector('table').tBodies[0].rows].map(r => [...r.cells].map(c => c.innerText))
+  var database = val[0]
 
   $('#oversikt > thead > tr').append('<th>Adresse</th>')
 
@@ -19,6 +22,5 @@ $(function(){
     $(this).append('<td>'+newcell+'</td>')
 
   })
-
 
 })
