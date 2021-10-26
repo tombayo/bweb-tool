@@ -3,25 +3,55 @@
  */
 class Workorder {
   /**
+   * @static renderers Contains custom datatable-renderers for the columns
+   */
+  static renderers = {
+    /**
+     * Renderes a hyperlink based on the Workorder ID.
+     * 
+     * @param {Any} d Data in cell
+     * @param {Object} c Datatables column
+     * @param {Workorder} o Workorder-object
+     * @returns {String} The rendered HTML
+     */
+    IDurl: (d,c,o)=>{
+      return `<a href="/endre/${o.id}">${o.id}</a>`
+    },
+    /**
+     * Renders a cell that contains date-information into the standard date-format of the table.
+     * 
+     * @param {Any} d Data in cell
+     * @param {Object} c Datatables column
+     * @param {Workorder} o Workorder-object
+     * @returns {String} Datestamp formatted as DD.MM.YYYY HH:mm
+     */
+    datestamp: (d,c,o)=>{
+      return new Date(d).toBwebTableDate()
+    }
+  }
+
+  /**
    * @static columnsOfTable The definition of the columns used in the DOM table
    */
   static columnsOfTable = [
-    { name: 'rowcolor', ui: 'rowcolor', visible: false},
-    { name: 'warning', ui: 'Varsel' },
-    { name: 'url', ui: 'NTE ref', render: (d,c,o)=>{return `<a href="/endre/${o.id}">${o.id}</a>`}},
-    { name: 'localref', ui: 'Ekstern ref' },
-    { name: 'orderdate', ui: 'Reg. dato' },
-    { name: 'customer', ui: 'Kunde' },
-    { name: 'location', ui: 'Poststed' },
-    { name: 'address', ui: 'Adresse' },
-    { name: 'shortdesc', ui: 'Beskrivelse' },
-    { name: 'contractor', ui: 'Entreprenør' },
-    { name: 'technician', ui: 'Montør', applyFilter: true},
-    { name: 'product', ui: 'Produkt', applyFilter: true},
-    { name: 'department', ui: 'Kategori', applyFilter: true},
-    { name: 'handler', ui: 'Bestilt av', applyFilter: true},
-    { name: 'status', ui: 'Status', applyFilter: true}
-  ].map(col=>Object.assign(col,{data:col.name})) // Duplicates the name prop to a new data prop
+    { name: 'rowcolor',   ui: 'Rad-farge',        visible: false                                        },
+    { name: 'warning',    ui: 'Varsel'                                                                  },
+    { name: 'url',        ui: 'NTE ref',                              render: this.renderers.IDurl      },
+    { name: 'localref',   ui: 'Ekstern ref'                                                             },
+    { name: 'orderdate',  ui: 'Reg. dato',                            render: this.renderers.datestamp  },
+    { name: 'customer',   ui: 'Kunde'                                                                   },
+    { name: 'tlf',        ui: 'Telefon',          extended: true                                        },
+    { name: 'location',   ui: 'Poststed'                                                                },
+    { name: 'address',    ui: 'Adresse'                                                                 },
+    { name: 'shortdesc',  ui: 'Beskrivelse'                                                             },
+    { name: 'contractor', ui: 'Entreprenør'                                                             },
+    { name: 'technician', ui: 'Montør',           applyFilter: true                                     },
+    { name: 'product',    ui: 'Produkt',          applyFilter: true                                     },
+    { name: 'department', ui: 'Kategori',         applyFilter: true                                     },
+    { name: 'handler',    ui: 'Bestilt av',       applyFilter: true                                     },
+    { name: 'duedate',    ui: 'Oppkoblingsfrist', extended: true,     render: this.renderers.datestamp  },
+    { name: 'status',     ui: 'Status',           applyFilter: true                                     }
+  ].map(col=>Object.assign(col,{data:col.name,defaultContent:''})) // Duplicates the name prop to a new data prop, and adds defaultContent for the columns
 
   /**
    * @static columnsOfRawHTML An array that matches the columns of the Raw HTML table scraped off the website.
@@ -52,6 +82,7 @@ class Workorder {
       if (data.length === Workorder.columnsOfRawHTML.length) {
         Object.assign(this, ...Workorder.columnsOfRawHTMLnames.map((k,i) => ({[k]: data[i]})))
 
+        this.orderdate = new Date().parseBwebTable(this.orderdate).toJSON()
         // Adds an archived date on Workorders that are already archived:
         this.archivedate = (this.status == 'arkivert')?this.created:undefined
       } else {
@@ -59,8 +90,6 @@ class Workorder {
       }
     } else {
       if (parseInt(data.id) !== NaN) {
-        // fills missing columnNames with empty data to prevent bugs when Workorder is created outside of main table:
-        Workorder.columnNames.map(v=>this[v] = ' ')
         Object.assign(this, data)
 
         this.created = data.created ?? new Date().toJSON() // Applies a created date if missing.
@@ -89,16 +118,6 @@ class Workorder {
     delete data.columnsOfTable
     delete data.columnsOfRawHTML
     delete data.columnsOfRawHTMLnames
-
-    /*
-      Below code remove props that are empty, we dont need to overwrite those.
-      If prop should stay empty, it would already be empty due to
-      filling missing columnNames with empty data in constructor.
-      @see this.constructor
-    */
-    for (let i in data) {
-      if (data[i] === " ") delete data[i]
-    }
 
     Object.assign(this, data) // Merge this with new data, overwriting matching props
 

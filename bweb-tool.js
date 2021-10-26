@@ -15,26 +15,11 @@ function uiBooster() {
     $('<h2/>').css({marginBottom:'0px',marginTop:'1.5rem',display:'inline-block'}).append('<a href="/">Bestillingsweb</a>')
   ).insertAfter('#header > div:first');
   $('#header > div:last > b:last').hide().next().next().hide(); // removes back link
-  //$('#header > div:last > b:last')[0].nextSibling.remove(); // removes search field label
   $('#header > div:last').prepend( // Adds the space for feedbacks
     $('<span id="refresh-feedback">').css({fontStyle:'italic',fontSize:'12px'}),
     $('<b>&nbsp;|</b>')
   );
-  //$('#navigation > div:last > ul > li:first').remove(); // Removes the vanilla search button, replaced with another one below.
   $('#navigation > div:first > ul > li:last').remove(); // Removes the "Mangler Fakturanr" button.
-  /*$('#header form')  // Moves the search-field and -button to be inline in the navbar
-    .appendTo(
-      $('<div>')
-      .css({float:'right'})
-      .appendTo('#navigation'))
-    .addClass('nav-item')
-    .children()
-      .addClass('nav-item')
-      .css({width:'3em'})
-      .attr('placeholder','Refnr...')
-      .attr('title', 'Skriv inn refnr for å gå direkte til ordre.')
-      .last()
-        .replaceWith('<button type="submit" class="nav-item">Søk</button>');*/
   $('#content > span.secret').hide(); // removes row-count at bottom of table
   $('#navigation > div:first').after( // Adds button for refreshing table and sorting by unread comments.
     $('<div>').css({float:'left'}).append(
@@ -58,10 +43,6 @@ function uiBooster() {
     var filter = $(this).attr('href').replace(/[^\w\s]/gi, '');
     if (filter != 'mangler_dokumentasjon') {
       $(this).hide()
-      /*
-      $(this).attr('href','#').on('click', function(){
-        filterStatus(filter);
-      });*/
     }
   });
 }
@@ -117,6 +98,7 @@ function rawHTMLfix(string) {
  */
 function initDatatable(callback){
   $.fn.dataTable.moment('DD.MM.YYYY HH:mm'); // Prepare Moment.js for sorting datetime
+  //$.fn.dataTable.moment('')
   var hiddencols = (typeof(settings.hiddenCols) == 'undefined') ? ["warning",'shortdesc','contractor'] : settings.hiddenCols
 
   return table.DataTable({
@@ -183,7 +165,7 @@ function initChosen() {
 function dataUpdated() {
   datatable.rows().every(function(){
     let workorder = this.data()
-    let rowcolor = workorder.rowcolor.replace(/ /g, '')
+    let rowcolor = workorder.rowcolor
     let row = this.node()
     if (rowcolor) {
       row.classList.add(rowcolor) // Colors the row based on it's rowcolor data
@@ -192,14 +174,6 @@ function dataUpdated() {
   })
 
   $('#filter-unread > span').html(datatable.rows('.rowcolor-orange').count()); // Counts the orange rows and display in menu-button
-}
-
-/**
- * Extension's settings was updated, lets update the page etc.
- */
-function settingsUpdated() {
-  datatable.state.clear()
-  document.location.reload()
 }
 
 /**
@@ -278,7 +252,7 @@ async function ajaxRefresh() {
  * Loads the full table in background and refreshes the visible content.
  */
 function backgroundRefresh() {
-  uiLoading()  
+  uiLoading(true)  
   ajaxRefresh().then((response) => {
     if (response.status !== 200) { // Something went wrong
       console.log('AjaxStatus:', response.status);
@@ -483,7 +457,7 @@ Promise.all([ loadSettings(), new Database().load() , DOMReady()]).then((v)=>{
     updateDatatable()
     dataUpdated() // Data has been added to the table, this triggers more data-handling.
     refreshFilters()
-    uiLoading()
+    uiLoading(false)
   })
 
   let html = parseTablesorterTable($('#oversikt').hide().parent().html())

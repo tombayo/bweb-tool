@@ -32,6 +32,17 @@ function loadSettings() {
 }
 
 /**
+ * Extension's settings was updated, lets update the page etc.
+ */
+ function settingsUpdated() {
+  if (typeof(datatable) !== 'undefined') {
+    datatable.state.clear()
+  }
+
+  document.location.reload()
+}
+
+/**
  * 
  */
 function mapReverseLookup(objmap, search) {
@@ -113,4 +124,69 @@ function convertToKartserverUrl(str, postnr) {
   } else {
     return false;
   }
+}
+
+/**
+ * Translates a norwegian month to english
+ * 
+ * @param {string} month Norwegian Month
+ * @returns {string} English Month
+ */
+function l10nMonthNOtoEN(month) {
+  let translatemonths = {
+    januar:'january',
+    februar:'february',
+    mars:'march',
+    april:'april',
+    mai:'may',
+    juni:'june',
+    juli:'july',
+    august:'august',
+    september:'september',
+    oktober:'october',
+    november:'november',
+    desember:'december'
+  }
+
+  return translatemonths[month.toLowerCase()]
+}
+
+/**
+ * Parses a datestring as used on the Bweb-site and converts it to a date-object
+ * 
+ * @param {string} datestring 
+ * @returns {Date} The parsed datestring as a Date-object
+ */
+Date.prototype.parseBweb = function (datestring) {
+  let dateparts = datestring.split(' ')
+  if (datestring) {
+    dateparts[1] = l10nMonthNOtoEN(dateparts[1])
+  }
+  return new Date(dateparts.join(' '))
+}
+
+Date.prototype.parseBwebTable = function (datestring) {
+  return new Date(datestring.slice(3,6)+datestring.slice(0,3)+datestring.slice(6))
+}
+
+/**
+ * Renders a dateobject to the format DD:MM:YYYY HH:mm
+ * This format is used in the main table on the bweb-site
+ * 
+ * @param {Date} d Dateobject to render
+ * @returns {String} Rendered string
+ */
+Date.prototype.toBwebTableDate = function () {
+  let str = ''
+  if(this.valueOf()) {
+    let date = this.getDate().toString().padStart(2,'0')
+    let month = (this.getMonth()+1).toString().padStart(2,'0')
+    let year = this.getFullYear().toString().padStart(2,'0')
+    let hour = this.getHours().toString().padStart(2,'0')
+    let minute = this.getMinutes().toString().padStart(2,'0')
+
+    str = `${date}.${month}.${year} ${hour}:${minute}`
+  }
+
+  return str
 }
