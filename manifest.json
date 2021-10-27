@@ -14,6 +14,7 @@
   },
   "permissions": [
     "storage",
+    "unlimitedStorage",
     "activeTab",
     "https://bweb2.nteb.no/*"
   ],
