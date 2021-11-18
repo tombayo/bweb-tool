@@ -158,11 +158,13 @@ function l10nMonthNOtoEN(month) {
  * @returns {Date} The parsed datestring as a Date-object
  */
 Date.prototype.parseBweb = function (datestring) {
-  let dateparts = datestring.split(' ')
+  if (datestring instanceof Date) { return datestring }
+
+  let dateparts = datestring?.split(' ')
   if (datestring) {
     dateparts[1] = l10nMonthNOtoEN(dateparts[1])
   }
-  return new Date(dateparts.join(' '))
+  return new Date(dateparts?.join(' '))
 }
 
 Date.prototype.parseBwebTable = function (datestring) {

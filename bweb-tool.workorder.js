@@ -37,6 +37,27 @@ function uiImprovements() {
   $('table').first().css({maxWidth:'650px'})
 }
 
+function scrapeCustomDueDate(d) {
+  let orderdate = new Date().parseBweb(d)
+  let scrapedate = document.querySelector('#id_kunde_oppkobl_dato')?.nextSibling.data?.match(/\(([^)]+)\)/)[1].split(' ').slice(1)
+  if (typeof(scrapedate) != 'undefined') {
+    let day = scrapedate[0]
+    let month = l10nMonthNOtoEN(scrapedate[1])
+    let year = orderdate.getFullYear()
+
+    let customduedate = new Date(`${day} ${month} ${year}`)
+
+    if (customduedate < orderdate) {
+      year++
+      customduedate = new Date(`${day} ${month} ${year}`)
+    }
+
+    return customduedate
+  } else {
+    return null
+  }
+}
+
 function scrapeWorkorderTable() {
   let tbldata = Object.fromEntries([...document.querySelector('table').tBodies[0].rows].map(r => [...r.cells].map(c => c.innerText)).filter(r=>(r.length==2)))
   let tblmap = {
@@ -50,7 +71,7 @@ function scrapeWorkorderTable() {
     productdesc: tbldata['Produkt:'],
     locationdesc: tbldata['Beskrivelse av lokasjon'],
     mapurl: tbldata['Kartserver:'],
-    duedate: new Date().parseBweb(tbldata['Oppkoblingsfrist'] ?? ''),
+    duedate: new Date().parseBweb(tbldata['Oppkoblingsfrist'] ?? scrapeCustomDueDate(tbldata['Registrert']) ?? ''),
 
     localref: tbldata['Ekstern referanse'],
     orderdate: new Date().parseBweb(tbldata['Registrert']),
