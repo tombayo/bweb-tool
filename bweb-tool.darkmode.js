@@ -7,7 +7,7 @@ function applyDarkmode() {
     let enable = (typeof(settings.darkmode) == 'undefined') ? false : settings.darkmode
     if (!enable) return null
 
-    let darkcss = chrome.extension.getURL('bweb-tool-dark.css')
+    let darkcss = chrome.runtime.getURL('bweb-tool-dark.css')
 
     if(document.querySelector(`link[href="${darkcss}"]`) === null) { // Check if stylesheet already is applied
       let link = document.createElement('link')

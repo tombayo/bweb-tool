@@ -20,7 +20,7 @@ function saveSettings(e) {
     applySpecial: applySpecial
   },()=>{
     console.log("Saved settings:",hiddenCols,stateSave,darkmode,autorefresh,autorefreshtime,applySpecial)
-    chrome.tabs.executeScript(null,{code:"settingsUpdated()"})
+    chrome.tabs.reload()
     window.close()
   })
 }
@@ -28,7 +28,7 @@ function saveSettings(e) {
 function resetAll() {
   chrome.storage.sync.clear(()=>{
     chrome.storage.local.clear(()=>{
-      chrome.tabs.executeScript(null,{code:"settingsUpdated()"})
+      chrome.tabs.reload()
       window.close()
     })
   })

@@ -1,5 +1,5 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "Bweb-tool",
   "version": "2.7.1",
   "author": "Tom Andre Munkhaug",
@@ -15,10 +15,12 @@
   "permissions": [
     "storage",
     "unlimitedStorage",
-    "activeTab",
+    "activeTab"
+  ],
+  "host_permissions": [
     "https://bweb2.nteb.no/*"
   ],
-  "browser_action": {
+  "action": {
     "default_title": "Bweb-tool",
     "default_popup": "popup.html"
   },
@@ -43,7 +45,7 @@
         "lib/jQuery-3.4.1/jquery-3.4.1.min.js",
         "lib/DataTables-1.10.20/js/jquery.dataTables.min.js",
         "lib/Chosen-1.8.7/chosen.jquery.min.js",
-        "lib/Moment-2.24.0/moment.min.js",
+        "lib/Moment-2.29.3/moment.min.js",
         "lib/DataTables-1.10.20/plugins/datetime-moment.js",
         "bweb-tool.database.js",
         "bweb-tool.js",
@@ -99,7 +101,12 @@
       ]
     }
   ],
-  "web_accessible_resources": [
-    "bweb-tool-dark.css"
-  ]
+  "web_accessible_resources": [{
+    "resources": [
+      "bweb-tool-dark.css"
+    ],
+    "matches": [
+      "https://bweb2.nteb.no/*"
+    ]
+  }]
 }
